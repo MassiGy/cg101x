@@ -73,7 +73,7 @@ PShape createClassRoomShell(float w, float h, float t) {
   PShape classRoom = createShape(GROUP);
 
   PShape frontWall, backWall, rooftop, floor, leftWall, rightWall;
-  PShape chalkBoard, doorLeft, doorRight;
+  PShape chalkBoard, doorLeft, doorRight, lightBulb1, lightBulb2;
   PShape decorationFrame1, decorationFrame2, decorationFrame3;
 
 
@@ -84,6 +84,9 @@ PShape createClassRoomShell(float w, float h, float t) {
   decorationFrame1 = createClassRoomDecorationFrame(t/2, w/8, 1, decorationFrameTextureImage3);
 
   rooftop = createClassRoomRoofTopWall(h, w, 1);
+  lightBulb1 = createClassRoomLightBulb(h/4, w/20, t/20);
+  lightBulb2 = createClassRoomLightBulb(h/4, w/20, t/20);
+
   floor = createClassRoomFloorWall(h, w, 1);
 
   rightWall = createClassRoomRightWall(t, w, 1);
@@ -101,6 +104,11 @@ PShape createClassRoomShell(float w, float h, float t) {
 
   rooftop.rotateX(HALF_PI);
   rooftop.translate(0, -t/2, 0);
+  lightBulb1.rotateX(HALF_PI);
+  lightBulb1.translate(0, -t/2+t/40, w/3);
+  lightBulb2.rotateX(HALF_PI);
+  lightBulb2.translate(0, -t/2+t/40, -w/3);
+
 
   floor.rotateX(HALF_PI);
   floor.translate(0, t/2, 0);
@@ -122,6 +130,11 @@ PShape createClassRoomShell(float w, float h, float t) {
   classRoom.addChild(decorationFrame1);
 
   classRoom.addChild(rooftop);
+  classRoom.addChild(lightBulb1);
+  classRoom.addChild(lightBulb2);
+  
+  
+
   classRoom.addChild(floor);
   //classRoom.addChild(leftWall);
 
@@ -255,6 +268,37 @@ PShape createClassRoomRoofTopWall(float w, float h, float t) {
 
   return rooftop;
 }
+
+PShape createClassRoomLightBulb(float w, float h, float t) {
+  PShape lightbulb = createShape(GROUP);
+
+  PVector[] emissveness = { // no emissivness
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+  };
+
+  PImage[] lightbulbTexture = {
+    new PImage(),
+    new PImage(),
+    new PImage(),
+    new PImage(),
+    new PImage(),
+    new PImage(),
+  };
+  int[] tints = {
+    255, 255, 255, 255, 255, 255,
+  };
+
+  lightbulb = createUnitaryBox(lightbulbTexture, emissveness, tints);
+  lightbulb.scale(w, h, t);
+
+  return lightbulb;
+}
+
 
 
 PShape createClassRoomFloorWall(float w, float h, float t) {
