@@ -1,6 +1,6 @@
 
 // Distance de la camera au sujet.
-float rayon = 2600;
+float rayon = 800;
 
 // Angle de la camera avec le sujet sur le plan XZ.
 float theta = 0;
@@ -28,7 +28,7 @@ PImage doorTextureImage;
 PImage soilBaseTextureImage;
 PImage gardenFloorTextureImage;
 
-PShape wholeDesk;
+//PShape wholeDesk;
 PShape classRoom;
 
 
@@ -38,10 +38,10 @@ void setup() {
   size(600, 600, P3D);
 
   deskPlaneTextureImage = loadImage("deskPlaneTexture.png");
-  //mouseTopTextureImage = loadImage("mouseTopTexture.png");
-  //keyboardTopTextureImage=loadImage("keyboardTopTexture.png");
-  //computerFrontTextureImage =  loadImage("computerFrontTexture.png");
-  //screenWallpaperTextureImage = loadImage("screenWallpaper.png");
+  mouseTopTextureImage = loadImage("mouseTopTexture.png");
+  keyboardTopTextureImage=loadImage("keyboardTopTexture.png");
+  computerFrontTextureImage =  loadImage("computerFrontTexture.png");
+  screenWallpaperTextureImage = loadImage("screenWallpaper.png");
   classRoomRoofTopTextureImage = loadImage("classRoomRoofTopTexture.png");
   classRoomFloorTextureImage = loadImage("classRoomFloorTexture.png");
   decorationFrameTextureImage1 = loadImage("decorationImage1.png");
@@ -53,7 +53,7 @@ void setup() {
 
   //wholeDesk = createWholeDesk(200, 125, 5);
 
-  classRoom = createClassRoomShell(1200, 900, 300);
+  classRoom = createClassRoom(1200, 900, 300);
 }
 
 void draw() {
@@ -73,13 +73,22 @@ void draw() {
 }
 
 
-PShape createClassRoomShell(float w, float h, float t) {
+PShape createClassRoom(float w, float h, float t) {
   PShape classRoom = createShape(GROUP);
 
   PShape frontWall, backWall, rooftop, floor, leftWall, rightWall;
   PShape chalkBoard, doorLeft, doorRight, lightBulb1, lightBulb2;
   PShape decorationFrame1, decorationFrame2, decorationFrame3;
   PShape soilBase, gardenFloor, gardenStairsStep1, gardenStairsStep2, gardenStairsStep3;
+
+  PShape[] desks = {
+    createWholeDesk(h/6, w/15, t/60),
+    createWholeDesk(h/6, w/15, t/60),
+    createWholeDesk(h/6, w/15, t/60),
+    createWholeDesk(h/6, w/15, t/60),
+    createWholeDesk(h/6, w/15, t/60),
+    createWholeDesk(h/6, w/15, t/60),
+  };
 
 
   frontWall = createClassRoomFrontWall(h, t, 1);
@@ -134,6 +143,15 @@ PShape createClassRoomShell(float w, float h, float t) {
   gardenStairsStep3.translate(-1.5*h-2*h/20, t/2+2*t/20, w/6);
 
 
+  for (int i = 0; i < desks.length/2; i++) {
+    desks[i].translate(-i*h/6 + h/2, t/6, 0);
+  }
+  //for (int i = desks.length/2; i < desks.length; i++) {
+  //  desks[i].translate(-i*h/6 + h/6*desks.length/2, t/6, h/3);
+  //}
+
+
+
   rightWall.rotateY(HALF_PI);
   rightWall.rotateX(HALF_PI);
   rightWall.translate(w/2-t/2, 0, 0);
@@ -169,6 +187,10 @@ PShape createClassRoomShell(float w, float h, float t) {
   classRoom.addChild(decorationFrame2);
   classRoom.addChild(decorationFrame3);
   classRoom.addChild(doorRight);
+
+  for (int i = 0; i < desks.length; i++) {
+    classRoom.addChild(desks[i]);
+  }
 
   return classRoom;
 }
