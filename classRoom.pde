@@ -1,6 +1,6 @@
 
 // Distance de la camera au sujet.
-float rayon = 1600;
+float rayon = 2600;
 
 // Angle de la camera avec le sujet sur le plan XZ.
 float theta = 0;
@@ -25,6 +25,8 @@ PImage decorationFrameTextureImage1;
 PImage decorationFrameTextureImage2;
 PImage decorationFrameTextureImage3;
 PImage doorTextureImage;
+PImage soilBaseTextureImage;
+PImage gardenFloorTextureImage;
 
 PShape wholeDesk;
 PShape classRoom;
@@ -46,6 +48,8 @@ void setup() {
   decorationFrameTextureImage2 = loadImage("decorationImage2.png");
   decorationFrameTextureImage3 = loadImage("decorationImage3.png");
   doorTextureImage = loadImage("doorTexture.png");
+  soilBaseTextureImage = loadImage("soilTexture.png");
+  gardenFloorTextureImage = loadImage("outsideGardenTexture.png");
 
   //wholeDesk = createWholeDesk(200, 125, 5);
 
@@ -53,7 +57,7 @@ void setup() {
 }
 
 void draw() {
-  background(191);
+  background(230);
 
   translate(width/2, height/2, 0);
 
@@ -75,6 +79,7 @@ PShape createClassRoomShell(float w, float h, float t) {
   PShape frontWall, backWall, rooftop, floor, leftWall, rightWall;
   PShape chalkBoard, doorLeft, doorRight, lightBulb1, lightBulb2;
   PShape decorationFrame1, decorationFrame2, decorationFrame3;
+  PShape soilBase, gardenFloor, gardenStairsStep1, gardenStairsStep2, gardenStairsStep3;
 
 
   frontWall = createClassRoomFrontWall(h, t, 1);
@@ -88,6 +93,11 @@ PShape createClassRoomShell(float w, float h, float t) {
   lightBulb2 = createClassRoomLightBulb(h/4, w/20, t/20);
 
   floor = createClassRoomFloorWall(h, w, 1);
+  soilBase = createClassRoomSoilBase(h*2, w, t/6);
+  gardenFloor = createClassRoomGardenFloor(h, w, 1);
+  gardenStairsStep1 = createClassRoomGardenStairsStep(h/20, w/3, t/20);
+  gardenStairsStep2 = createClassRoomGardenStairsStep(h/20, w/3, t/20);
+  gardenStairsStep3 = createClassRoomGardenStairsStep(h/20, w/3, t/20);
 
   rightWall = createClassRoomRightWall(t, w, 1);
   decorationFrame2 = createClassRoomDecorationFrame(t/2, w/8, 1, decorationFrameTextureImage1);
@@ -112,6 +122,17 @@ PShape createClassRoomShell(float w, float h, float t) {
 
   floor.rotateX(HALF_PI);
   floor.translate(0, t/2, 0);
+  soilBase.rotateX(HALF_PI);
+  soilBase.translate(-h/2, t/2+t/12+2, 0);
+  gardenFloor.rotateX(HALF_PI);
+  gardenFloor.translate(-h, t/2, 0);
+  gardenStairsStep1.rotateX(HALF_PI);
+  gardenStairsStep1.translate(-1.5*h, t/2, w/6);
+  gardenStairsStep2.rotateX(HALF_PI);
+  gardenStairsStep2.translate(-1.5*h-h/20, t/2+t/20, w/6);
+  gardenStairsStep3.rotateX(HALF_PI);
+  gardenStairsStep3.translate(-1.5*h-2*h/20, t/2+2*t/20, w/6);
+
 
   rightWall.rotateY(HALF_PI);
   rightWall.rotateX(HALF_PI);
@@ -132,10 +153,16 @@ PShape createClassRoomShell(float w, float h, float t) {
   classRoom.addChild(rooftop);
   classRoom.addChild(lightBulb1);
   classRoom.addChild(lightBulb2);
-  
-  
+
+
 
   classRoom.addChild(floor);
+  classRoom.addChild(soilBase);
+  classRoom.addChild(gardenFloor);
+  classRoom.addChild(gardenStairsStep1);
+  classRoom.addChild(gardenStairsStep2);
+  classRoom.addChild(gardenStairsStep3);
+
   //classRoom.addChild(leftWall);
 
   classRoom.addChild(rightWall);
@@ -330,6 +357,99 @@ PShape createClassRoomFloorWall(float w, float h, float t) {
 
   return floor;
 }
+
+
+PShape createClassRoomSoilBase(float w, float h, float t) {
+  PShape soilBase = createShape(GROUP);
+
+  PVector[] emissveness = { // no emissivness
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+  };
+
+  PImage[] soilBaseTexture = {
+    soilBaseTextureImage,
+    soilBaseTextureImage,
+    soilBaseTextureImage,
+    soilBaseTextureImage,
+    soilBaseTextureImage,
+    soilBaseTextureImage,
+  };
+  int[] tints = {
+    255, 255, 255, 255, 255, 255,
+  };
+
+  soilBase = createUnitaryBox(soilBaseTexture, emissveness, tints);
+  soilBase.scale(w, h, t);
+
+  return soilBase;
+}
+
+
+PShape createClassRoomGardenFloor(float w, float h, float t) {
+  PShape gardenFloor = createShape(GROUP);
+
+  PVector[] emissveness = { // no emissivness
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+  };
+
+  PImage[] gardenFloorTexture = {
+    gardenFloorTextureImage,
+    gardenFloorTextureImage,
+    gardenFloorTextureImage,
+    gardenFloorTextureImage,
+    gardenFloorTextureImage,
+    gardenFloorTextureImage,
+  };
+  int[] tints = {
+    255, 255, 255, 255, 255, 255,
+  };
+
+  gardenFloor = createUnitaryBox(gardenFloorTexture, emissveness, tints);
+  gardenFloor.scale(w, h, t);
+
+  return gardenFloor;
+}
+
+PShape createClassRoomGardenStairsStep(float w, float h, float t) {
+  PShape stairsStep = createShape(GROUP);
+
+  PVector[] emissveness = { // no emissivness
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+  };
+
+  PImage[] stairsStepTexture = {
+    classRoomFloorTextureImage,
+    classRoomFloorTextureImage,
+    classRoomFloorTextureImage,
+    classRoomFloorTextureImage,
+    classRoomFloorTextureImage,
+    classRoomFloorTextureImage,
+  };
+  int[] tints = {
+    191, 191, 191, 191, 191, 191
+  };
+
+  stairsStep = createUnitaryBox(stairsStepTexture, emissveness, tints);
+  stairsStep.scale(w, h, t);
+
+  return stairsStep;
+}
+
 
 
 PShape createClassRoomRightWall(float w, float h, float t) {
