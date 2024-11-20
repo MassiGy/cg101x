@@ -1,6 +1,6 @@
 
 // Distance de la camera au sujet.
-float rayon = 1000;
+float rayon = 1600;
 
 // Angle de la camera avec le sujet sur le plan XZ.
 float theta = 0;
@@ -21,9 +21,10 @@ PImage computerFrontTextureImage;
 PImage screenWallpaperTextureImage;
 PImage classRoomRoofTopTextureImage;
 PImage classRoomFloorTextureImage;
-PImage classRoomDecorationFrameTextureImage1;
-PImage classRoomDecorationFrameTextureImage2;
-PImage classRoomDecorationFrameTextureImage3;
+PImage decorationFrameTextureImage1;
+PImage decorationFrameTextureImage2;
+PImage decorationFrameTextureImage3;
+PImage doorTextureImage;
 
 PShape wholeDesk;
 PShape classRoom;
@@ -41,13 +42,14 @@ void setup() {
   //screenWallpaperTextureImage = loadImage("screenWallpaper.png");
   classRoomRoofTopTextureImage = loadImage("classRoomRoofTopTexture.png");
   classRoomFloorTextureImage = loadImage("classRoomFloorTexture.png");
-  classRoomDecorationFrameTextureImage1 = loadImage("decorationImage1.png");
-  classRoomDecorationFrameTextureImage2 = loadImage("decorationImage2.png");
-  classRoomDecorationFrameTextureImage3 = loadImage("decorationImage3.png");
+  decorationFrameTextureImage1 = loadImage("decorationImage1.png");
+  decorationFrameTextureImage2 = loadImage("decorationImage2.png");
+  decorationFrameTextureImage3 = loadImage("decorationImage3.png");
+  doorTextureImage = loadImage("doorTexture.png");
 
   //wholeDesk = createWholeDesk(200, 125, 5);
 
-  classRoom = createClassRoomShell(800, 600, 200);
+  classRoom = createClassRoomShell(1200, 900, 300);
 }
 
 void draw() {
@@ -79,14 +81,15 @@ PShape createClassRoomShell(float w, float h, float t) {
   chalkBoard = createClassRoomChalkBoard(h/2, t/2, 1);
 
   backWall = createClassRoomBackWall(h, t, 1);
-  decorationFrame1 = createClassRoomDecorationFrame(t/2, w/8, 1, classRoomDecorationFrameTextureImage3);
+  decorationFrame1 = createClassRoomDecorationFrame(t/2, w/8, 1, decorationFrameTextureImage3);
 
   rooftop = createClassRoomRoofTopWall(h, w, 1);
   floor = createClassRoomFloorWall(h, w, 1);
 
   rightWall = createClassRoomRightWall(t, w, 1);
-  decorationFrame2 = createClassRoomDecorationFrame(t/2, w/8, 1, classRoomDecorationFrameTextureImage1);
-  decorationFrame3 = createClassRoomDecorationFrame(t/2, w/8, 1, classRoomDecorationFrameTextureImage2);
+  decorationFrame2 = createClassRoomDecorationFrame(t/2, w/8, 1, decorationFrameTextureImage1);
+  decorationFrame3 = createClassRoomDecorationFrame(t/2, w/8, 1, decorationFrameTextureImage2);
+  doorRight = createClassRoomDoor(t/1.5, w/5, 1);
 
 
   frontWall.translate(0, 0, -w/2);
@@ -94,7 +97,7 @@ PShape createClassRoomShell(float w, float h, float t) {
 
   backWall.translate(0, 0, w/2);
   decorationFrame1.rotateY(PI);
-  decorationFrame1.translate(0,0, w/2-2);
+  decorationFrame1.translate(0, 0, w/2-2);
 
   rooftop.rotateX(HALF_PI);
   rooftop.translate(0, -t/2, 0);
@@ -106,18 +109,18 @@ PShape createClassRoomShell(float w, float h, float t) {
   rightWall.rotateX(HALF_PI);
   rightWall.translate(w/2-t/2, 0, 0);
   decorationFrame2.rotateY(-HALF_PI);
-  //decorationFrame1.rotateX(HALF_PI);
   decorationFrame2.translate(w/2-t/2 -2, 0, 0);
   decorationFrame3.rotateY(-HALF_PI);
-  //decorationFrame1.rotateX(HALF_PI);
   decorationFrame3.translate(w/2-t/2 -2, 0, t);
+  doorRight.rotateY(-HALF_PI);
+  doorRight.translate(w/2-t/2 -2, t/10, -t);
 
   classRoom.addChild(frontWall);
   classRoom.addChild(chalkBoard);
-  
+
   classRoom.addChild(backWall);
   classRoom.addChild(decorationFrame1);
-  
+
   classRoom.addChild(rooftop);
   classRoom.addChild(floor);
   //classRoom.addChild(leftWall);
@@ -125,6 +128,7 @@ PShape createClassRoomShell(float w, float h, float t) {
   classRoom.addChild(rightWall);
   classRoom.addChild(decorationFrame2);
   classRoom.addChild(decorationFrame3);
+  classRoom.addChild(doorRight);
 
   return classRoom;
 }
@@ -312,6 +316,36 @@ PShape createClassRoomRightWall(float w, float h, float t) {
   rightWall.scale(w, h, t);
 
   return rightWall;
+}
+
+PShape createClassRoomDoor(float w, float h, float t) {
+  PShape door = createShape(GROUP);
+
+  PVector[] emissveness = { // no emissivness
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+    new PVector(),
+  };
+
+  PImage[] doorTexture = {
+    doorTextureImage,
+    doorTextureImage,
+    new PImage(),
+    new PImage(),
+    new PImage(),
+    new PImage(),
+  };
+  int[] tints = {
+    255, 255, 50, 50, 50, 50
+  };
+
+  door = createUnitaryBox(doorTexture, emissveness, tints);
+  door.scale(w, h, t);
+
+  return door;
 }
 
 
