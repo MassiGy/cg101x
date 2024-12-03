@@ -1,20 +1,31 @@
 
-// Distance de la camera au sujet.
-float rayon = 800;
+//Camera Variables
+float x, y, z;
+float tx, ty, tz;
+float rotX, rotY;
+float mX, mY;
+float xComp, zComp;
+float angle;
 
-// Angle de la camera avec le sujet sur le plan XZ.
-float theta = 0;
-// Angle de la camera avec le sujet sur le plan YZ.
-float phi = 0;
-
-// Position cartésienne de la camera
-// calculée à partir du rayon et de l'angle.
-float camX = 0;
-float camY = 0;
-float camZ = 0;
+//Movement Variables
+int moveX;
+int moveZ;
+float vY;
+boolean moveUP, moveDOWN, moveLEFT, moveRIGHT;
 
 
-PImage deskPlaneTextureImage;
+//Constants
+int totalBoxes = 20;
+int standHeight = 100;
+int dragMotionConstant = 10;
+int pushMotionConstant = 100;
+int movementSpeed = 50;    //Bigger number = slower
+float sensitivity = 15;      //Bigger number = slower
+int stillBox = 100;        //Center of POV, mouse must be stillBox away from center to move
+int cameraDistance = 1000;  //distance from camera to camera target in lookmode... 8?
+
+
+PImage woodTextureImage;
 PImage mouseTopTextureImage;
 PImage keyboardTopTextureImage;
 PImage computerFrontTextureImage;
@@ -28,16 +39,42 @@ PImage doorTextureImage;
 PImage soilBaseTextureImage;
 PImage gardenFloorTextureImage;
 
-//PShape wholeDesk;
-PShape classRoom;
+PImage[] blankTexturesArray = {
+  new PImage(),
+  new PImage(),
+  new PImage(),
+  new PImage(),
+  new PImage(),
+  new PImage(),
+};
 
+PImage[] woodTexture = new PImage[6];
+
+PVector[] blankEmissvenessArray = { // no emissivness
+  new PVector(),
+  new PVector(),
+  new PVector(),
+  new PVector(),
+  new PVector(),
+  new PVector(),
+};
+
+int[] blackTintsArray = {      // for no textures
+  50, 50, 50, 50, 50, 50,
+};
+int[] whiteTintsArray = {      // to preserve textures
+  255, 255, 255, 255, 255, 255,
+};
+
+
+PShape classRoom;
 
 
 
 void setup() {
   size(600, 600, P3D);
 
-  deskPlaneTextureImage = loadImage("deskPlaneTexture.png");
+  woodTextureImage = loadImage("deskPlaneTexture.png");
   mouseTopTextureImage = loadImage("mouseTopTexture.png");
   keyboardTopTextureImage=loadImage("keyboardTopTexture.png");
   computerFrontTextureImage =  loadImage("computerFrontTexture.png");
@@ -51,9 +88,33 @@ void setup() {
   soilBaseTextureImage = loadImage("soilTexture.png");
   gardenFloorTextureImage = loadImage("outsideGardenTexture.png");
 
-  //wholeDesk = createWholeDesk(200, 125, 5);
+  for (int i = 0; i < woodTexture.length; i++)
+    woodTexture[i]=woodTextureImage;
 
-  classRoom = createClassRoom(1200, 900, 300);
+  classRoom = createClassRoom(600, 450, 150);
+
+  //Camera Initialization
+  x = width/2;
+  y = height/2 - 200;
+  y-= standHeight;
+  z = (height/2.0) / tan(PI*60.0 / 360.0);
+  tx = width/2;
+  ty = height/2;
+  tz = 0;
+  rotX = 0;
+  rotY = 0;
+  xComp = tx - x;
+  zComp = tz - z;
+  angle = 0;
+
+  //Movement Initialization
+  moveX = 0;
+  moveX = 0;
+  moveUP = false;
+  moveDOWN = false;
+  moveLEFT = false;
+  moveRIGHT = false;
+  vY = 0;
 }
 
 void draw() {
@@ -61,14 +122,10 @@ void draw() {
 
   translate(width/2, height/2, 0);
 
-  bougerCamera();
+  cameraUpdate();
+  locationUpdate();
+  camera(x, y, z, tx, ty, tz, 0, 1, 0);
 
-  camera(
-    camX, camY, camZ,
-    0, 0, 0,
-    0, 1, 0);
-
-  //shape(wholeDesk);
   shape(classRoom);
 }
 
@@ -143,12 +200,14 @@ PShape createClassRoom(float w, float h, float t) {
   gardenStairsStep3.translate(-1.5*h-2*h/20, t/2+2*t/20, w/6);
 
 
-  for (int i = 0; i < desks.length/2; i++) {
-    desks[i].translate(-i*h/6 + h/2, t/6, 0);
+
+  // generate the desks algorithmically
+  for (int i = 0; i < desks.length; i++) {
+    if (i < desks.length/2)
+      desks[i].translate(-(i+1)*h/6 + h/2 - w/15, t/6, 0);  // -w/15 on the X to have the first row of desks not glued to the right wall
+    else
+      desks[i].translate(-i*h/6 + h/2, t/6, 4*w/15);
   }
-  //for (int i = desks.length/2; i < desks.length; i++) {
-  //  desks[i].translate(-i*h/6 + h/6*desks.length/2, t/6, h/3);
-  //}
 
 
 
@@ -198,30 +257,8 @@ PShape createClassRoom(float w, float h, float t) {
 PShape createClassRoomFrontWall(float w, float h, float t) {
   PShape frontWall = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
-  PImage[] frontWallTexture = {
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-  };
-  int[] tints = {
-    255, 255, 255, 255, 255, 255,
-  };
-
-  frontWall = createUnitaryBox(frontWallTexture, emissveness, tints);
+  frontWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
   frontWall.scale(w, h, t);
-
 
   return frontWall;
 }
@@ -229,59 +266,19 @@ PShape createClassRoomFrontWall(float w, float h, float t) {
 PShape createClassRoomChalkBoard(float w, float h, float t) {
   PShape chalkBoard = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
-  PImage[] chalkBoardTexture = {
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-  };
   int[] tints = {
     120, 120, 120, 120, 120, 120
   };
 
-  chalkBoard = createUnitaryBox(chalkBoardTexture, emissveness, tints);
+  chalkBoard = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, tints);
   chalkBoard.scale(w, h, t);
-
-
   return chalkBoard;
 }
 
 PShape createClassRoomBackWall(float w, float h, float t) {
   PShape backWall = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
-  PImage[] backWallTexture = {
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-  };
-  int[] tints = {
-    255, 255, 255, 255, 255, 255,
-  };
-
-  backWall = createUnitaryBox(backWallTexture, emissveness, tints);
+  backWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
   backWall.scale(w, h, t);
 
   return backWall;
@@ -291,15 +288,6 @@ PShape createClassRoomBackWall(float w, float h, float t) {
 PShape createClassRoomRoofTopWall(float w, float h, float t) {
   PShape rooftop = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
   PImage[] rooftopWallTexture = {
     classRoomRoofTopTextureImage,
     classRoomRoofTopTextureImage,
@@ -308,11 +296,8 @@ PShape createClassRoomRoofTopWall(float w, float h, float t) {
     classRoomRoofTopTextureImage,
     classRoomRoofTopTextureImage,
   };
-  int[] tints = {
-    255, 255, 255, 255, 255, 255,
-  };
 
-  rooftop = createUnitaryBox(rooftopWallTexture, emissveness, tints);
+  rooftop = createUnitaryBox(rooftopWallTexture, blankEmissvenessArray, whiteTintsArray);
   rooftop.scale(w, h, t);
 
   return rooftop;
@@ -321,28 +306,7 @@ PShape createClassRoomRoofTopWall(float w, float h, float t) {
 PShape createClassRoomLightBulb(float w, float h, float t) {
   PShape lightbulb = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
-  PImage[] lightbulbTexture = {
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-  };
-  int[] tints = {
-    255, 255, 255, 255, 255, 255,
-  };
-
-  lightbulb = createUnitaryBox(lightbulbTexture, emissveness, tints);
+  lightbulb = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, whiteTintsArray);
   lightbulb.scale(w, h, t);
 
   return lightbulb;
@@ -353,15 +317,6 @@ PShape createClassRoomLightBulb(float w, float h, float t) {
 PShape createClassRoomFloorWall(float w, float h, float t) {
   PShape floor = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
   PImage[] floorWallTexture = {
     classRoomFloorTextureImage,
     classRoomFloorTextureImage,
@@ -370,11 +325,8 @@ PShape createClassRoomFloorWall(float w, float h, float t) {
     classRoomFloorTextureImage,
     classRoomFloorTextureImage,
   };
-  int[] tints = {
-    255, 255, 255, 255, 255, 255,
-  };
 
-  floor = createUnitaryBox(floorWallTexture, emissveness, tints);
+  floor = createUnitaryBox(floorWallTexture, blankEmissvenessArray, whiteTintsArray);
   floor.scale(w, h, t);
 
   return floor;
@@ -384,15 +336,6 @@ PShape createClassRoomFloorWall(float w, float h, float t) {
 PShape createClassRoomSoilBase(float w, float h, float t) {
   PShape soilBase = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
   PImage[] soilBaseTexture = {
     soilBaseTextureImage,
     soilBaseTextureImage,
@@ -401,11 +344,8 @@ PShape createClassRoomSoilBase(float w, float h, float t) {
     soilBaseTextureImage,
     soilBaseTextureImage,
   };
-  int[] tints = {
-    255, 255, 255, 255, 255, 255,
-  };
 
-  soilBase = createUnitaryBox(soilBaseTexture, emissveness, tints);
+  soilBase = createUnitaryBox(soilBaseTexture, blankEmissvenessArray, whiteTintsArray);
   soilBase.scale(w, h, t);
 
   return soilBase;
@@ -415,15 +355,6 @@ PShape createClassRoomSoilBase(float w, float h, float t) {
 PShape createClassRoomGardenFloor(float w, float h, float t) {
   PShape gardenFloor = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
   PImage[] gardenFloorTexture = {
     gardenFloorTextureImage,
     gardenFloorTextureImage,
@@ -432,11 +363,8 @@ PShape createClassRoomGardenFloor(float w, float h, float t) {
     gardenFloorTextureImage,
     gardenFloorTextureImage,
   };
-  int[] tints = {
-    255, 255, 255, 255, 255, 255,
-  };
 
-  gardenFloor = createUnitaryBox(gardenFloorTexture, emissveness, tints);
+  gardenFloor = createUnitaryBox(gardenFloorTexture, blankEmissvenessArray, whiteTintsArray);
   gardenFloor.scale(w, h, t);
 
   return gardenFloor;
@@ -444,15 +372,6 @@ PShape createClassRoomGardenFloor(float w, float h, float t) {
 
 PShape createClassRoomGardenStairsStep(float w, float h, float t) {
   PShape stairsStep = createShape(GROUP);
-
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
 
   PImage[] stairsStepTexture = {
     classRoomFloorTextureImage,
@@ -462,11 +381,11 @@ PShape createClassRoomGardenStairsStep(float w, float h, float t) {
     classRoomFloorTextureImage,
     classRoomFloorTextureImage,
   };
-  int[] tints = {
+  int[] tints = {    // make the texture slightly darker
     191, 191, 191, 191, 191, 191
   };
 
-  stairsStep = createUnitaryBox(stairsStepTexture, emissveness, tints);
+  stairsStep = createUnitaryBox(stairsStepTexture, blankEmissvenessArray, tints);
   stairsStep.scale(w, h, t);
 
   return stairsStep;
@@ -477,28 +396,7 @@ PShape createClassRoomGardenStairsStep(float w, float h, float t) {
 PShape createClassRoomRightWall(float w, float h, float t) {
   PShape rightWall = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
-  PImage[] rightWallTexture = {
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-  };
-  int[] tints = {
-    255, 255, 255, 255, 255, 255,
-  };
-
-  rightWall = createUnitaryBox(rightWallTexture, emissveness, tints);
+  rightWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
   rightWall.scale(w, h, t);
 
   return rightWall;
@@ -506,15 +404,6 @@ PShape createClassRoomRightWall(float w, float h, float t) {
 
 PShape createClassRoomDoor(float w, float h, float t) {
   PShape door = createShape(GROUP);
-
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
 
   PImage[] doorTexture = {
     doorTextureImage,
@@ -528,7 +417,7 @@ PShape createClassRoomDoor(float w, float h, float t) {
     255, 255, 50, 50, 50, 50
   };
 
-  door = createUnitaryBox(doorTexture, emissveness, tints);
+  door = createUnitaryBox(doorTexture, blankEmissvenessArray, tints);
   door.scale(w, h, t);
 
   return door;
@@ -538,15 +427,6 @@ PShape createClassRoomDoor(float w, float h, float t) {
 PShape createClassRoomDecorationFrame(float w, float h, float t, PImage texture) {
   PShape frame = createShape(GROUP);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
   PImage[] frameTexture = {
     texture,
     new PImage(),
@@ -555,11 +435,8 @@ PShape createClassRoomDecorationFrame(float w, float h, float t, PImage texture)
     new PImage(),
     new PImage(),
   };
-  int[] tints = {
-    255, 50, 255, 255, 255, 255, // ignore the back and make the sides the same color as the texture
-  };
 
-  frame = createUnitaryBox(frameTexture, emissveness, tints);
+  frame = createUnitaryBox(frameTexture, blankEmissvenessArray, whiteTintsArray);
   frame.scale(w, h, t);
 
   return frame;
@@ -608,91 +485,40 @@ PShape createWholeDesk(float w, float h, float t) {
 PShape createChairShape(float w, float h, float t) {
   PShape chair = createShape(GROUP);
 
+  PShape backRest = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  PShape buttom =createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
 
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
-  PImage[] backRestTexture = {
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-  };
-  int[] chairRestAreasTints = {
-    255, 255, 255, 255, 255, 255,
-  };
-
-  PShape backRest = createUnitaryBox(backRestTexture, emissveness, chairRestAreasTints);
   backRest.scale(w, h, t);
-
-
-  PImage[] buttomRest = {
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-  };
-
-
-  PShape buttom =createUnitaryBox(buttomRest, emissveness, chairRestAreasTints);
   buttom.scale(w, h, t);
   buttom.rotateX(HALF_PI);
   buttom.translate(0, w/2, h/2);
 
-  PImage[] legsTextures = {
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-  };
 
-  int[] tints = {
-    50, 50, 50, 50, 50, 50,
-  };
+  PShape[] legs = new PShape[4];
 
-  PShape[] legs = {
-    createUnitaryBox(legsTextures, emissveness, tints),
-    createUnitaryBox(legsTextures, emissveness, tints),
-    createUnitaryBox(legsTextures, emissveness, tints),
-    createUnitaryBox(legsTextures, emissveness, tints),
-  };
+  for (int i = 0; i < legs.length; i++) {
+    legs[i] = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, blackTintsArray);
 
+    legs[i].scale(w/10, h, t*2);
 
-
-  legs[0].scale(w/10, h, t*2);
-  legs[0].translate(-w/2, h);
-
-  legs[1].scale(w/10, h, t*2);
-  legs[1].translate(w/2, h);
-
-  legs[2].scale(w/10, h, t*2);
-  legs[2].translate(-w/2, h, h);
-
-  legs[3].scale(w/10, h, t*2);
-  legs[3].translate(w/2, h, h);
-
+    if (i%2==0)
+      if (i<legs.length/2)
+        legs[i].translate(-w/2, h, 0);
+      else
+        legs[i].translate(-w/2, h, h);
+    else
+      if (i<legs.length/2)
+        legs[i].translate(w/2, h, 0);
+      else
+        legs[i].translate(w/2, h, h);
+  }
 
 
   chair.addChild(backRest);
   chair.addChild(buttom);
-
-  chair.addChild(legs[0]);
-  chair.addChild(legs[1]);
-  chair.addChild(legs[2]);
-  chair.addChild(legs[3]);
-
+  for (int i = 0; i < legs.length; i++) {
+    chair.addChild(legs[i]);
+  }
   return chair;
 }
 
@@ -700,78 +526,34 @@ PShape createChairShape(float w, float h, float t) {
 PShape createDeskShape(float w, float h, float t) {
   PShape desk = createShape(GROUP);
 
-
-  PVector[] emissveness = {  // no emissveness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
-  PImage[] deskPlaneTexture = {
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-    deskPlaneTextureImage,
-  };
-
-  int[] deskPlaneTints = {
-    255, 255, 255, 255, 255, 255,
-  };
-
-  PShape deskPlane = createUnitaryBox(deskPlaneTexture, emissveness, deskPlaneTints);
+  PShape deskPlane = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
   deskPlane.scale(w, h, t);
 
 
+  PShape[] legs = new PShape[4];
 
-  PImage[] legsTextures = {
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-  };
-  int[] tints = {
-    50, 50, 50, 50, 50, 50,
-  };
+  for (int i = 0; i < legs.length; i++) {
+    legs[i] = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, blackTintsArray);
 
-  PShape[] legs = {
-    createUnitaryBox(legsTextures, emissveness, tints),
-    createUnitaryBox(legsTextures, emissveness, tints),
-    createUnitaryBox(legsTextures, emissveness, tints),
-    createUnitaryBox(legsTextures, emissveness, tints),
-  };
+    legs[i].scale(w/20, h, t);
+    legs[i].rotateX(-HALF_PI);
 
-  legs[0].scale(w/20, h, t);
-  legs[0].rotateX(-HALF_PI);
-  legs[0].translate(-w/2, -h/2, h/2);
-
-  legs[1].scale(w/20, h, t);
-  legs[1].rotateX(-HALF_PI);
-  legs[1].translate(w/2, -h/2, h/2);
-
-  legs[2].scale(w/20, h, t);
-  legs[2].rotateX(-HALF_PI);
-  legs[2].translate(-w/2, h/2, h/2);
-
-  legs[3].scale(w/20, h, t);
-  legs[3].rotateX(-HALF_PI);
-  legs[3].translate(w/2, h/2, h/2);
-
-
+    if (i%2==0)
+      if (i<legs.length/2)
+        legs[i].translate(-w/2, -h/2, h/2);
+      else
+        legs[i].translate(-w/2, h/2, h/2);
+    else
+      if (i<legs.length/2)
+        legs[i].translate(w/2, -h/2, h/2);
+      else
+        legs[i].translate(w/2, h/2, h/2);
+  }
 
   desk.addChild(deskPlane);
-
-
-  desk.addChild(legs[0]);
-  desk.addChild(legs[1]);
-  desk.addChild(legs[2]);
-  desk.addChild(legs[3]);
+  for (int i = 0; i < legs.length; i++) {
+    desk.addChild(legs[i]);
+  }
 
   desk.rotateX(-HALF_PI);
   return desk;
@@ -779,15 +561,6 @@ PShape createDeskShape(float w, float h, float t) {
 
 PShape createMouseShape(float w, float h, float t) {
   PShape mouse;
-
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
 
   PImage[] mouseTexture = {
     mouseTopTextureImage,
@@ -801,7 +574,7 @@ PShape createMouseShape(float w, float h, float t) {
     191,
     50, 50, 50, 50, 50,
   };
-  mouse = createUnitaryBox(mouseTexture, emissveness, tints);
+  mouse = createUnitaryBox(mouseTexture, blankEmissvenessArray, tints);
   mouse.scale(w, h, t);
   mouse.rotateX(HALF_PI);
 
@@ -810,16 +583,6 @@ PShape createMouseShape(float w, float h, float t) {
 
 PShape createKeyboardShape(float w, float h, float t) {
   PShape keyboard;
-
-
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
 
   PImage[] keyboardTexture = {
     keyboardTopTextureImage,
@@ -834,8 +597,7 @@ PShape createKeyboardShape(float w, float h, float t) {
     50, 50, 50, 50, 50,
   };
 
-
-  keyboard = createUnitaryBox(keyboardTexture, emissveness, tints);
+  keyboard = createUnitaryBox(keyboardTexture, blankEmissvenessArray, tints);
   keyboard.scale(w, h, t);
   keyboard.rotateX(HALF_PI);
 
@@ -845,16 +607,6 @@ PShape createKeyboardShape(float w, float h, float t) {
 
 PShape createComputerShape(float w, float h, float t) {
   PShape computer;
-
-
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
 
   PImage[] computerTexture = {
     computerFrontTextureImage,
@@ -869,10 +621,8 @@ PShape createComputerShape(float w, float h, float t) {
     50, 50, 50, 50, 50,
   };
 
-
-  computer = createUnitaryBox(computerTexture, emissveness, tints);
+  computer = createUnitaryBox(computerTexture, blankEmissvenessArray, tints);
   computer.scale(w, h, t);
-
 
   return computer;
 }
@@ -880,8 +630,6 @@ PShape createComputerShape(float w, float h, float t) {
 
 PShape createScreenShape(float w, float h, float t) {
   PShape screen = createShape(GROUP);
-
-
 
   PVector[] screenEmissveness = {
     new PVector(200, 10, 10),
@@ -909,48 +657,22 @@ PShape createScreenShape(float w, float h, float t) {
   PShape screenPlane = createUnitaryBox(screenPlaneTexture, screenEmissveness, screenTints);
   screenPlane.scale(w, h, t);
 
-
-
-  PVector[] emissveness = { // no emissivness
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-    new PVector(),
-  };
-
-  PImage[] legTextures = {
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-  };
-  int[] legTints = {
-    50, 50, 50, 50, 50, 50,
-  };
-
-  PShape leg = createUnitaryBox(legTextures, emissveness, legTints);
+  PShape leg = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, blackTintsArray);
 
   leg.scale(w/10, h/2, t);
   leg.translate(0, h/2, -t);
 
 
-  PShape buttomRestPlane = createUnitaryBox(legTextures, emissveness, legTints);
+  PShape buttomRestPlane = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, blackTintsArray);
 
   buttomRestPlane.scale(w/3, h/2, t);
   buttomRestPlane.rotateX(HALF_PI);
 
   buttomRestPlane.translate(0, h-h*.3, h/(4*10));
 
-
-
   screen.addChild(screenPlane);
   screen.addChild(leg);
   screen.addChild(buttomRestPlane);
-
 
   return screen;
 }
@@ -1065,22 +787,102 @@ PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, int
   return box;
 }
 
-void bougerCamera() {
-  // Calcul de la position cartésienne sur le
-  // plan XZ et YZ en même temps :
-  camX = rayon * cos(phi) * sin(theta);
-  camY = rayon * sin(phi);
-  camZ = rayon * cos(phi) * cos(theta);
+public void cameraUpdate() {
+
+  int diffX = mouseX - width/2;
+  int diffY = mouseY - width/2;
+
+  if (abs(diffX) > stillBox) {
+    xComp = tx - x;
+    zComp = tz - z;
+    angle = correctAngle(xComp, zComp);
+
+    angle+= diffX/(sensitivity*10);
+
+    if (angle < 0)
+      angle += 360;
+    else if (angle >= 360)
+      angle -= 360;
+
+    float newXComp = cameraDistance * sin(radians(angle));
+    float newZComp = cameraDistance * cos(radians(angle));
+
+    tx = newXComp + x;
+    tz = -newZComp + z;
+  }
+
+  if (abs(diffY) > stillBox)
+    ty += diffY/(sensitivity/1.5);
+}
 
 
-  // On incrémente l'angle :
-  if (pmouseX < mouseX)
-    theta = (theta - 0.05) % TWO_PI;
-  else if (pmouseX > mouseX)
-    theta = (theta + 0.05) % TWO_PI;
+public void locationUpdate() {
 
-  if (pmouseY < mouseY)
-    phi = (phi - 0.05) % TWO_PI;
-  else if (pmouseY > mouseY)
-    phi = (phi + 0.05) % TWO_PI;
+  if (moveUP) {
+    z += zComp/movementSpeed;
+    tz+= zComp/movementSpeed;
+    x += xComp/movementSpeed;
+    tx+= xComp/movementSpeed;
+  } else if (moveDOWN) {
+    z -= zComp/movementSpeed;
+    tz-= zComp/movementSpeed;
+    x -= xComp/movementSpeed;
+    tx-= xComp/movementSpeed;
+  }
+  if (moveRIGHT) {
+    z += xComp/movementSpeed;
+    tz+= xComp/movementSpeed;
+    x -= zComp/movementSpeed;
+    tx-= zComp/movementSpeed;
+  }
+  if (moveLEFT) {
+    z -= xComp/movementSpeed;
+    tz-= xComp/movementSpeed;
+    x += zComp/movementSpeed;
+    tx+= zComp/movementSpeed;
+  }
+}
+
+public void keyPressed() {
+  if (keyCode == UP) {
+    moveZ = -10;
+    moveUP = true;
+  } else if (keyCode == DOWN) {
+    moveZ = 10;
+    moveDOWN = true;
+  } else if (keyCode == LEFT) {
+    moveX = -10;
+    moveLEFT = true;
+  } else if (keyCode == RIGHT) {
+    moveX = 10;
+    moveRIGHT = true;
+  }
+}
+
+public void keyReleased() {
+  if (keyCode == UP) {
+    moveUP = false;
+    moveZ = 0;
+  } else if (keyCode == DOWN) {
+    moveDOWN = false;
+    moveZ = 0;
+  } else if (keyCode == LEFT) {
+    moveLEFT = false;
+    moveX = 0;
+  } else if (keyCode == RIGHT) {
+    moveRIGHT = false;
+    moveX = 0;
+  }
+}
+
+// black magic
+public float correctAngle(float xc, float zc) {
+  float newAngle = -degrees(atan(xc/zc));
+  if (xComp > 0 && zComp > 0)
+    newAngle = (90 + newAngle)+90;
+  else if (xComp < 0 && zComp > 0)
+    newAngle = newAngle + 180;
+  else if (xComp < 0 && zComp < 0)
+    newAngle = (90+ newAngle) + 270;
+  return newAngle;
 }
