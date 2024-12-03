@@ -78,14 +78,14 @@ PVector[] whiteTintsArray = {      // to preserve textures
   //255, 255, 255, 255, 255, 255,
 };
 
-
+boolean noTextures = true;
 PShape classRoom;
 
 
 
 void setup() {
   size(600, 600, P3D);
-
+  if(!noTextures){
   woodTextureImage = loadImage("deskPlaneTexture.png");
   mouseTopTextureImage = loadImage("mouseTopTexture.png");
   keyboardTopTextureImage=loadImage("keyboardTopTexture.png");
@@ -102,6 +102,7 @@ void setup() {
 
   for (int i = 0; i < woodTexture.length; i++)
     woodTexture[i]=woodTextureImage;
+  }
 
   classRoom = createClassRoom(600, 450, 150);
 
