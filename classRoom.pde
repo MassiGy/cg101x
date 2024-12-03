@@ -59,11 +59,23 @@ PVector[] blankEmissvenessArray = { // no emissivness
   new PVector(),
 };
 
-int[] blackTintsArray = {      // for no textures
-  50, 50, 50, 50, 50, 50,
+PVector[] blackTintsArray = {      // for no textures
+  new PVector(50, 255),
+  new PVector(50, 255),
+  new PVector(50, 255),
+  new PVector(50, 255),
+  new PVector(50, 255),
+  new PVector(50, 255),
+  //50, 50, 50, 50, 50, 50,
 };
-int[] whiteTintsArray = {      // to preserve textures
-  255, 255, 255, 255, 255, 255,
+PVector[] whiteTintsArray = {      // to preserve textures
+  new PVector(255, 255),
+  new PVector(255, 255),
+  new PVector(255, 255),
+  new PVector(255, 255),
+  new PVector(255, 255),
+  new PVector(255, 255),
+  //255, 255, 255, 255, 255, 255,
 };
 
 
@@ -280,8 +292,14 @@ PShape createClassRoomFrontWall(float w, float h, float t) {
 PShape createClassRoomChalkBoard(float w, float h, float t) {
   PShape chalkBoard = createShape(GROUP);
 
-  int[] tints = {
-    120, 120, 120, 120, 120, 120
+  PVector[] tints = {
+    new PVector(120, 255),
+    new PVector(120, 255),
+    new PVector(120, 255),
+    new PVector(120, 255),
+    new PVector(120, 255),
+    new PVector(120, 255),
+    //120, 120, 120, 120, 120, 120
   };
 
   chalkBoard = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, tints);
@@ -395,8 +413,14 @@ PShape createClassRoomGardenStairsStep(float w, float h, float t) {
     classRoomFloorTextureImage,
     classRoomFloorTextureImage,
   };
-  int[] tints = {    // make the texture slightly darker
-    191, 191, 191, 191, 191, 191
+  PVector[] tints = {    // make the texture slightly darker
+    new PVector(191, 255),
+    new PVector(191, 255),
+    new PVector(191, 255),
+    new PVector(191, 255),
+    new PVector(191, 255),
+    new PVector(191, 255),
+    //191, 191, 191, 191, 191, 191
   };
 
   stairsStep = createUnitaryBox(stairsStepTexture, blankEmissvenessArray, tints);
@@ -427,8 +451,14 @@ PShape createClassRoomDoor(float w, float h, float t) {
     new PImage(),
     new PImage(),
   };
-  int[] tints = {
-    255, 255, 50, 50, 50, 50
+  PVector[] tints = {
+    new PVector(255, 255),
+    new PVector(255, 255),
+    new PVector(50, 255),
+    new PVector(50, 255),
+    new PVector(50, 255),
+    new PVector(50, 255),
+    //255, 255, 50, 50, 50, 50
   };
 
   door = createUnitaryBox(doorTexture, blankEmissvenessArray, tints);
@@ -465,7 +495,7 @@ PShape createClassRoomLeftWall(float w, float h, float t) {
     new PVector(153, 50),
     new PVector(153, 50),
   };
-  PShape leftWallWindow = createUnitaryBox2(blankTexturesArray, blankEmissvenessArray, windowTints);
+  PShape leftWallWindow = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, windowTints);
   leftWallWindow.scale(w/2, 2*h/6, t);
 
 
@@ -636,9 +666,14 @@ PShape createMouseShape(float w, float h, float t) {
     new PImage(),
     new PImage(),
   };
-  int[] tints = {
-    191,
-    50, 50, 50, 50, 50,
+  PVector[] tints = {
+    new PVector(191,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    //191,50, 50, 50, 50, 50,
   };
   mouse = createUnitaryBox(mouseTexture, blankEmissvenessArray, tints);
   mouse.scale(w, h, t);
@@ -658,11 +693,15 @@ PShape createKeyboardShape(float w, float h, float t) {
     new PImage(),
     new PImage(),
   };
-  int[] tints = {
-    255,
-    50, 50, 50, 50, 50,
+   PVector[] tints = {
+    new PVector(255,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    //255,50, 50, 50, 50, 50,
   };
-
   keyboard = createUnitaryBox(keyboardTexture, blankEmissvenessArray, tints);
   keyboard.scale(w, h, t);
   keyboard.rotateX(HALF_PI);
@@ -682,11 +721,15 @@ PShape createComputerShape(float w, float h, float t) {
     new PImage(),
     new PImage(),
   };
-  int[] tints = {
-    255,
-    50, 50, 50, 50, 50,
+   PVector[] tints = {
+    new PVector(255,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    //255,50, 50, 50, 50, 50,
   };
-
   computer = createUnitaryBox(computerTexture, blankEmissvenessArray, tints);
   computer.scale(w, h, t);
 
@@ -715,9 +758,14 @@ PShape createScreenShape(float w, float h, float t) {
     new PImage(),
   };
 
-  int[] screenTints = {
-    255, // for the display
-    50, 50, 50, 50, 50, // for the other sides
+  PVector[] screenTints = {
+    new PVector(255,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    new PVector(50,255),
+    //255,50, 50, 50, 50, 50,
   };
 
   PShape screenPlane = createUnitaryBox(screenPlaneTexture, screenEmissveness, screenTints);
@@ -744,117 +792,7 @@ PShape createScreenShape(float w, float h, float t) {
 }
 
 
-
-PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, int[] facesTints) {
-  assert(facesTextures.length == 6);
-  assert(facesEmissiveness.length == 6);
-  assert(facesTints.length == 6);
-
-  PShape box = createShape(GROUP);
-
-  PShape[] faces = {
-    createShape(),
-    createShape(),
-    createShape(),
-    createShape(),
-    createShape(),
-    createShape(),
-  };
-
-  float c = 0.5;
-
-
-  // AVANT
-
-  faces[0].beginShape();
-  faces[0].noStroke();
-  faces[0].textureMode(NORMAL);
-  faces[0].texture(facesTextures[0]);
-  faces[0].tint(facesTints[0]);
-  faces[0].emissive(facesEmissiveness[0].x, facesEmissiveness[0].y, facesEmissiveness[0].z);
-  faces[0].vertex(-c, -c, c, 0, 0);
-  faces[0].vertex(-c, c, c, 0, 1);
-  faces[0].vertex(c, c, c, 1, 1);
-  faces[0].vertex(c, -c, c, 1, 0);
-  faces[0].endShape();
-
-
-  // FOND
-  faces[1].beginShape();
-  faces[1].noStroke();
-  faces[1].textureMode(NORMAL);
-  faces[1].texture(facesTextures[1]);
-  faces[1].tint(facesTints[1]);
-  faces[1].emissive(facesEmissiveness[1].x, facesEmissiveness[1].y, facesEmissiveness[1].z);
-  faces[1].vertex(-c, -c, -c, 0, 0);
-  faces[1].vertex(-c, c, -c, 0, 1);
-  faces[1].vertex(c, c, -c, 1, 1);
-  faces[1].vertex(c, -c, -c, 1, 0);
-  faces[1].endShape();
-
-  // HAUT
-  faces[2].beginShape();
-  faces[2].noStroke();
-  faces[2].textureMode(NORMAL);
-  faces[2].texture(facesTextures[2]);
-  faces[2].tint(facesTints[2]);
-  faces[2].emissive(facesEmissiveness[2].x, facesEmissiveness[2].y, facesEmissiveness[2].z);
-  faces[2].vertex(-c, -c, c, 0, 0);
-  faces[2].vertex(c, -c, c, 1, 0);
-  faces[2].vertex(c, -c, -c, 1, 1);
-  faces[2].vertex(-c, -c, -c, 0, 1);
-  faces[2].endShape();
-
-
-  // GAUCHE
-  faces[3].beginShape();
-  faces[3].noStroke();
-  faces[3].textureMode(NORMAL);
-  faces[3].texture(facesTextures[3]);
-  faces[3].tint(facesTints[3]);
-  faces[3].emissive(facesEmissiveness[3].x, facesEmissiveness[3].y, facesEmissiveness[3].z);
-  faces[3].vertex(-c, -c, c, 1, 1);
-  faces[3].vertex(-c, -c, -c, 0, 1);
-  faces[3].vertex(-c, c, -c, 0, 0);
-  faces[3].vertex(-c, c, c, 1, 0);
-  faces[3].endShape();
-
-  // DROITE
-  faces[4].beginShape();
-  faces[4].noStroke();
-  faces[4].textureMode(NORMAL);
-  faces[4].texture(facesTextures[4]);
-  faces[4].tint(facesTints[4]);
-  faces[4].emissive(facesEmissiveness[4].x, facesEmissiveness[4].y, facesEmissiveness[4].z);
-  faces[4].vertex(c, -c, c, 1, 1);
-  faces[4].vertex(c, -c, -c, 0, 1);
-  faces[4].vertex(c, c, -c, 0, 0);
-  faces[4].vertex(c, c, c, 1, 0);
-  faces[4].endShape();
-
-  // BAS
-  faces[5].beginShape();
-  faces[5].noStroke();
-  faces[5].textureMode(NORMAL);
-  faces[5].texture(facesTextures[5]);
-  faces[5].tint(facesTints[5]);
-  faces[5].emissive(facesEmissiveness[5].x, facesEmissiveness[5].y, facesEmissiveness[5].z);
-  faces[5].vertex(-c, c, c, 0, 0);
-  faces[5].vertex(c, c, c, 1, 0);
-  faces[5].vertex(c, c, -c, 1, 1);
-  faces[5].vertex(-c, c, -c, 0, 1);
-  faces[5].endShape();
-
-
-
-  for (int i = 0; i < faces.length; i++) {
-    box.addChild(faces[i]);
-  }
-  return box;
-}
-
-
-PShape createUnitaryBox2(PImage[] facesTextures, PVector[] facesEmissiveness, PVector[] facesTints) {
+PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVector[] facesTints) {
   assert(facesTextures.length == 6);
   assert(facesEmissiveness.length == 6);
   assert(facesTints.length == 6);
