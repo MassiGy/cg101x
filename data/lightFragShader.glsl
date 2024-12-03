@@ -1,5 +1,4 @@
 #define PROCESSING_TEXLIGHT_SHADER
-
 #ifdef GL_ES
 precision mediump float;
 precision mediump int;
@@ -30,10 +29,10 @@ float blinnPhongFactor(vec3 lightDir, vec3 vertPos, vec3 vecNormal, float shinin
 }
 
 void main() {
-  vec3  dfColor  = vec3(0);
-  vec3  amColor  = vec3(0);
-  vec3  spColor  = vec3(0);
-  vec3  normal   = normalize(ecNormal);
+  vec3  dfColor = vec3(0);
+  vec3  amColor = vec3(0);
+  vec3  spColor = vec3(0);
+  vec3  normal  = normalize(ecNormal);
   vec4  texColor = texture2D(texture, uv.st);
 
   if(vertEmissive.x > 0 || vertEmissive.y > 0 || vertEmissive.z > 0) {
@@ -44,8 +43,7 @@ void main() {
         float intensity = lambertFactor(lightDir, normal);
         float spec      = blinnPhongFactor(lightDir, ecPosition, normal, vertShininess);
     
-//      dfColor += vertColor.rgb * lightDiffuse[i] * intensity;
-        dfColor += vertColor.rgb * texColor.rgb * lightDiffuse[i] * intensity;
+        dfColor += vertColor.rgb * texColor.rgb *lightDiffuse[i] * intensity;
         spColor += lightSpecular[i] * spec;
         amColor += lightAmbient[i];
       }
@@ -53,3 +51,4 @@ void main() {
     gl_FragColor = vec4(dfColor + amColor + spColor, vertColor.a * texColor.a);
   }
 }
+

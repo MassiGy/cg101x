@@ -25,7 +25,30 @@ int stillBox = 100;        //Center of POV, mouse must be stillBox away from cen
 int cameraDistance = 1000;  //distance from camera to camera target in lookmode... 8?
 
 
+
+
+
+PShader lightShader;
+PVector[] lightPos = {
+  new PVector(-900, -300, -300),
+  new PVector(-300, -300, 300),
+  //new PVector(-300, 300, -300),
+  //new PVector(0, -300, 0)
+};
+
+PVector[] lightColor = {
+  new PVector(255, 255, 255),
+  new PVector(255, 255, 255),
+  //new PVector(255, 255, 255),
+  //new PVector(255, 255, 255),
+};
+
+
+
+
+
 PImage woodTextureImage;
+PImage matteBlackTextureImage;
 PImage mouseTopTextureImage;
 PImage keyboardTopTextureImage;
 PImage computerFrontTextureImage;
@@ -49,6 +72,7 @@ PImage[] blankTexturesArray = {
 };
 
 PImage[] woodTexture = new PImage[6];
+PImage[] matteBlackTexture = new PImage[6];
 
 PVector[] blankEmissvenessArray = { // no emissivness
   new PVector(),
@@ -57,6 +81,24 @@ PVector[] blankEmissvenessArray = { // no emissivness
   new PVector(),
   new PVector(),
   new PVector(),
+};
+
+PVector[] blackEmissivenessArray = {      // for no textures
+  new PVector(50, 50, 50),
+  new PVector(50, 50, 50),
+  new PVector(50, 50, 50),
+  new PVector(50, 50, 50),
+  new PVector(50, 50, 50),
+  new PVector(50, 50, 50),
+};
+
+float[] defaultShininess = {
+  100000.0,
+  100000.0,
+  100000.0,
+  100000.0,
+  100000.0,
+  100000.0,
 };
 
 PVector[] blackTintsArray = {      // for no textures
@@ -82,44 +124,12 @@ boolean noTextures = false;
 PShape classRoom;
 
 
-PShader lightShader;
-PVector[] lightPos = {
-  new PVector(300, -300, 300),
-  //new PVector(-300, 300, 300),
-  //new PVector(-300, 300, -300),
-  //new PVector(0, -300, 0)
-};
-
-PVector[] lightColor = {
-  new PVector(255, 255, 255),
-  //new PVector(255, 255, 255),
-  //new PVector(255, 255, 255),
-  //new PVector(255, 255, 255),
-};
-
 
 void setup() {
   size(600, 600, P3D);
-  if (!noTextures) {
-    woodTextureImage = loadImage("deskPlaneTexture.png");
-    mouseTopTextureImage = loadImage("mouseTopTexture.png");
-    keyboardTopTextureImage=loadImage("keyboardTopTexture.png");
-    computerFrontTextureImage =  loadImage("computerFrontTexture.png");
-    screenWallpaperTextureImage = loadImage("screenWallpaper.png");
-    classRoomRoofTopTextureImage = loadImage("classRoomRoofTopTexture.png");
-    classRoomFloorTextureImage = loadImage("classRoomFloorTexture.png");
-    decorationFrameTextureImage1 = loadImage("decorationImage1.png");
-    decorationFrameTextureImage2 = loadImage("decorationImage2.png");
-    decorationFrameTextureImage3 = loadImage("decorationImage3.png");
-    doorTextureImage = loadImage("doorTexture.png");
-    soilBaseTextureImage = loadImage("soilTexture.png");
-    gardenFloorTextureImage = loadImage("outsideGardenTexture.png");
+  // load shaders
+  lightShader=loadShader("lightFragShader.glsl", "lightVertShader.glsl");
 
-    for (int i = 0; i < woodTexture.length; i++)
-      woodTexture[i]=woodTextureImage;
-  }
-
-  classRoom = createClassRoom(600, 450, 150);
 
   //Camera Initialization
   x = width/2;
@@ -145,8 +155,31 @@ void setup() {
   vY = 0;
 
 
-  // load shaders
-  lightShader=loadShader("lightFragShader.glsl", "lightVertShader.glsl");
+  if (!noTextures) {
+    woodTextureImage = loadImage("deskPlaneTexture.png");
+    matteBlackTextureImage = loadImage("matteBlackTextureImage.png");
+    mouseTopTextureImage = loadImage("mouseTopTexture.png");
+    keyboardTopTextureImage=loadImage("keyboardTopTexture.png");
+    computerFrontTextureImage =  loadImage("computerFrontTexture.png");
+    screenWallpaperTextureImage = loadImage("screenWallpaper.png");
+    classRoomRoofTopTextureImage = loadImage("classRoomRoofTopTexture.png");
+    classRoomFloorTextureImage = loadImage("classRoomFloorTexture.png");
+    decorationFrameTextureImage1 = loadImage("decorationImage1.png");
+    decorationFrameTextureImage2 = loadImage("decorationImage2.png");
+    decorationFrameTextureImage3 = loadImage("decorationImage3.png");
+    doorTextureImage = loadImage("doorTexture.png");
+    soilBaseTextureImage = loadImage("soilTexture.png");
+    gardenFloorTextureImage = loadImage("outsideGardenTexture.png");
+
+    for (int i = 0; i < woodTexture.length; i++)
+      woodTexture[i]=woodTextureImage;
+
+
+    for (int i = 0; i < matteBlackTexture.length; i++)
+      matteBlackTexture[i]=matteBlackTextureImage;
+  }
+
+  classRoom = createClassRoom(600, 450, 150);
 }
 
 void draw() {
@@ -159,13 +192,14 @@ void draw() {
   camera(x, y, z, tx, ty, tz, 0, 1, 0);
 
 
-  ambientLight(10, 10, 10);
+  ambientLight(55, 55, 55);
 
-  for (int i=0; i<lightPos.length; i++) {
-    lightSpecular(lightColor[i].x, lightColor[i].y, lightColor[i].z);
-    pointLight(lightColor[i].x, lightColor[i].y, lightColor[i].z,
-      lightPos[i].x, lightPos[i].y, lightPos[i].z);
-  }
+
+  //  for (int i=0; i<lightPos.length; i++) {
+  //    lightSpecular(lightColor[i].x, lightColor[i].y, lightColor[i].z);
+  //    pointLight(lightColor[i].x, lightColor[i].y, lightColor[i].z,
+  //      lightPos[i].x, lightPos[i].y, lightPos[i].z);
+  //  }
 
 
   fill(255);
@@ -176,10 +210,9 @@ void draw() {
     box(10, 10, 10);
     popMatrix();
   }
-  emissive(0, 0, 0);
-  shininess(2);
 
-  shader(lightShader);
+
+  // shader(lightShader);
   shape(classRoom);
 }
 
@@ -325,7 +358,7 @@ PShape createClassRoom(float w, float h, float t) {
 PShape createClassRoomFrontWall(float w, float h, float t) {
   PShape frontWall = createShape(GROUP);
 
-  frontWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  frontWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   frontWall.scale(w, h, t);
 
   return frontWall;
@@ -344,7 +377,7 @@ PShape createClassRoomChalkBoard(float w, float h, float t) {
     //120, 120, 120, 120, 120, 120
   };
 
-  chalkBoard = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, tints);
+  chalkBoard = createUnitaryBox(matteBlackTexture, blankEmissvenessArray, tints, defaultShininess);
   chalkBoard.scale(w, h, t);
   return chalkBoard;
 }
@@ -352,7 +385,7 @@ PShape createClassRoomChalkBoard(float w, float h, float t) {
 PShape createClassRoomBackWall(float w, float h, float t) {
   PShape backWall = createShape(GROUP);
 
-  backWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  backWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   backWall.scale(w, h, t);
 
   return backWall;
@@ -371,7 +404,7 @@ PShape createClassRoomRoofTopWall(float w, float h, float t) {
     classRoomRoofTopTextureImage,
   };
 
-  rooftop = createUnitaryBox(rooftopWallTexture, blankEmissvenessArray, whiteTintsArray);
+  rooftop = createUnitaryBox(rooftopWallTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   rooftop.scale(w, h, t);
 
   return rooftop;
@@ -380,7 +413,7 @@ PShape createClassRoomRoofTopWall(float w, float h, float t) {
 PShape createClassRoomLightBulb(float w, float h, float t) {
   PShape lightbulb = createShape(GROUP);
 
-  lightbulb = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, whiteTintsArray);
+  lightbulb = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   lightbulb.scale(w, h, t);
 
   return lightbulb;
@@ -400,7 +433,7 @@ PShape createClassRoomFloorWall(float w, float h, float t) {
     classRoomFloorTextureImage,
   };
 
-  floor = createUnitaryBox(floorWallTexture, blankEmissvenessArray, whiteTintsArray);
+  floor = createUnitaryBox(floorWallTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   floor.scale(w, h, t);
 
   return floor;
@@ -419,7 +452,7 @@ PShape createClassRoomSoilBase(float w, float h, float t) {
     soilBaseTextureImage,
   };
 
-  soilBase = createUnitaryBox(soilBaseTexture, blankEmissvenessArray, whiteTintsArray);
+  soilBase = createUnitaryBox(soilBaseTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   soilBase.scale(w, h, t);
 
   return soilBase;
@@ -438,7 +471,7 @@ PShape createClassRoomGardenFloor(float w, float h, float t) {
     gardenFloorTextureImage,
   };
 
-  gardenFloor = createUnitaryBox(gardenFloorTexture, blankEmissvenessArray, whiteTintsArray);
+  gardenFloor = createUnitaryBox(gardenFloorTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   gardenFloor.scale(w, h, t);
 
   return gardenFloor;
@@ -465,7 +498,7 @@ PShape createClassRoomGardenStairsStep(float w, float h, float t) {
     //191, 191, 191, 191, 191, 191
   };
 
-  stairsStep = createUnitaryBox(stairsStepTexture, blankEmissvenessArray, tints);
+  stairsStep = createUnitaryBox(stairsStepTexture, blankEmissvenessArray, tints, defaultShininess);
   stairsStep.scale(w, h, t);
 
   return stairsStep;
@@ -476,7 +509,7 @@ PShape createClassRoomGardenStairsStep(float w, float h, float t) {
 PShape createClassRoomRightWall(float w, float h, float t) {
   PShape rightWall = createShape(GROUP);
 
-  rightWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  rightWall = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   rightWall.scale(w, h, t);
 
   return rightWall;
@@ -503,7 +536,7 @@ PShape createClassRoomDoor(float w, float h, float t) {
     //255, 255, 50, 50, 50, 50
   };
 
-  door = createUnitaryBox(doorTexture, blankEmissvenessArray, tints);
+  door = createUnitaryBox(doorTexture, blankEmissvenessArray, tints, defaultShininess);
   door.scale(w, h, t);
 
   return door;
@@ -515,18 +548,18 @@ PShape createClassRoomLeftWall(float w, float h, float t) {
 
 
   // wall partial that is  the support for the door.
-  PShape leftWallPartial1 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  PShape leftWallPartial1 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   leftWallPartial1.scale(w, h/2, t);
 
   // wall partial that is at start of the room (close to the chalk board)
-  PShape leftWallPartial2 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  PShape leftWallPartial2 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   leftWallPartial2.scale(w, h/6, t);
 
   // Partail 3 and 4 are the small wall parts ontop and on the buttom of the window
-  PShape leftWallPartial3 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  PShape leftWallPartial3 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   leftWallPartial3.scale(w/4, 2*h/6, t);
 
-  PShape leftWallPartial4 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  PShape leftWallPartial4 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   leftWallPartial4.scale(w/4, 2*h/6, t);
 
   PVector[] windowTints = {
@@ -537,7 +570,7 @@ PShape createClassRoomLeftWall(float w, float h, float t) {
     new PVector(153, 50),
     new PVector(153, 50),
   };
-  PShape leftWallWindow = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, windowTints);
+  PShape leftWallWindow = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, windowTints, defaultShininess);
   leftWallWindow.scale(w/2, 2*h/6, t);
 
 
@@ -574,7 +607,7 @@ PShape createClassRoomDecorationFrame(float w, float h, float t, PImage texture)
     new PImage(),
   };
 
-  frame = createUnitaryBox(frameTexture, blankEmissvenessArray, whiteTintsArray);
+  frame = createUnitaryBox(frameTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   frame.scale(w, h, t);
 
   return frame;
@@ -623,8 +656,8 @@ PShape createWholeDesk(float w, float h, float t) {
 PShape createChairShape(float w, float h, float t) {
   PShape chair = createShape(GROUP);
 
-  PShape backRest = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
-  PShape buttom =createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  PShape backRest = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
+  PShape buttom =createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
 
   backRest.scale(w, h, t);
   buttom.scale(w, h, t);
@@ -635,7 +668,7 @@ PShape createChairShape(float w, float h, float t) {
   PShape[] legs = new PShape[4];
 
   for (int i = 0; i < legs.length; i++) {
-    legs[i] = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, blackTintsArray);
+    legs[i] = createUnitaryBox(matteBlackTexture, blankEmissvenessArray, blackTintsArray, defaultShininess);
 
     legs[i].scale(w/10, h, t*2);
 
@@ -664,14 +697,14 @@ PShape createChairShape(float w, float h, float t) {
 PShape createDeskShape(float w, float h, float t) {
   PShape desk = createShape(GROUP);
 
-  PShape deskPlane = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  PShape deskPlane = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray, defaultShininess);
   deskPlane.scale(w, h, t);
 
 
   PShape[] legs = new PShape[4];
 
   for (int i = 0; i < legs.length; i++) {
-    legs[i] = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, blackTintsArray);
+    legs[i] = createUnitaryBox(matteBlackTexture, blankEmissvenessArray, blackTintsArray, defaultShininess);
 
     legs[i].scale(w/20, h, t);
     legs[i].rotateX(-HALF_PI);
@@ -702,11 +735,12 @@ PShape createMouseShape(float w, float h, float t) {
 
   PImage[] mouseTexture = {
     mouseTopTextureImage,
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+
   };
   PVector[] tints = {
     new PVector(191, 255),
@@ -717,7 +751,7 @@ PShape createMouseShape(float w, float h, float t) {
     new PVector(50, 255),
     //191,50, 50, 50, 50, 50,
   };
-  mouse = createUnitaryBox(mouseTexture, blankEmissvenessArray, tints);
+  mouse = createUnitaryBox(mouseTexture, blankEmissvenessArray, tints, defaultShininess);
   mouse.scale(w, h, t);
   mouse.rotateX(HALF_PI);
 
@@ -729,11 +763,11 @@ PShape createKeyboardShape(float w, float h, float t) {
 
   PImage[] keyboardTexture = {
     keyboardTopTextureImage,
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
   };
   PVector[] tints = {
     new PVector(255, 255),
@@ -744,7 +778,7 @@ PShape createKeyboardShape(float w, float h, float t) {
     new PVector(50, 255),
     //255,50, 50, 50, 50, 50,
   };
-  keyboard = createUnitaryBox(keyboardTexture, blankEmissvenessArray, tints);
+  keyboard = createUnitaryBox(keyboardTexture, blankEmissvenessArray, tints, defaultShininess);
   keyboard.scale(w, h, t);
   keyboard.rotateX(HALF_PI);
 
@@ -757,11 +791,11 @@ PShape createComputerShape(float w, float h, float t) {
 
   PImage[] computerTexture = {
     computerFrontTextureImage,
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
   };
   PVector[] tints = {
     new PVector(255, 255),
@@ -772,7 +806,7 @@ PShape createComputerShape(float w, float h, float t) {
     new PVector(50, 255),
     //255,50, 50, 50, 50, 50,
   };
-  computer = createUnitaryBox(computerTexture, blankEmissvenessArray, tints);
+  computer = createUnitaryBox(computerTexture, blankEmissvenessArray, tints, defaultShininess);
   computer.scale(w, h, t);
 
   return computer;
@@ -783,7 +817,7 @@ PShape createScreenShape(float w, float h, float t) {
   PShape screen = createShape(GROUP);
 
   PVector[] screenEmissveness = {
-    new PVector(200, 10, 10),
+    new PVector(255, 255, 255),
     new PVector(),
     new PVector(),
     new PVector(),
@@ -793,11 +827,11 @@ PShape createScreenShape(float w, float h, float t) {
 
   PImage[] screenPlaneTexture = {
     screenWallpaperTextureImage,
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
-    new PImage(),
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
+    matteBlackTextureImage,
   };
 
   PVector[] screenTints = {
@@ -810,16 +844,16 @@ PShape createScreenShape(float w, float h, float t) {
     //255,50, 50, 50, 50, 50,
   };
 
-  PShape screenPlane = createUnitaryBox(screenPlaneTexture, screenEmissveness, screenTints);
+  PShape screenPlane = createUnitaryBox(screenPlaneTexture, screenEmissveness, screenTints, defaultShininess);
   screenPlane.scale(w, h, t);
 
-  PShape leg = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, blackTintsArray);
+  PShape leg = createUnitaryBox(matteBlackTexture, blankEmissvenessArray, blackTintsArray, defaultShininess);
 
   leg.scale(w/10, h/2, t);
   leg.translate(0, h/2, -t);
 
 
-  PShape buttomRestPlane = createUnitaryBox(blankTexturesArray, blankEmissvenessArray, blackTintsArray);
+  PShape buttomRestPlane = createUnitaryBox(matteBlackTexture, blankEmissvenessArray, blackTintsArray, defaultShininess);
 
   buttomRestPlane.scale(w/3, h/2, t);
   buttomRestPlane.rotateX(HALF_PI);
@@ -834,10 +868,11 @@ PShape createScreenShape(float w, float h, float t) {
 }
 
 
-PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVector[] facesTints) {
+PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVector[] facesTints, float[] facesShininess) {
   assert(facesTextures.length == 6);
   assert(facesEmissiveness.length == 6);
   assert(facesTints.length == 6);
+  assert(facesShininess.length == 6);
 
   PShape box = createShape(GROUP);
 
@@ -869,6 +904,7 @@ PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVe
   faces[0].texture(facesTextures[0]);
   faces[0].tint(facesTints[0].x, facesTints[0].y);
   faces[0].emissive(facesEmissiveness[0].x, facesEmissiveness[0].y, facesEmissiveness[0].z);
+  faces[0].shininess(facesShininess[0]);
 
   faces[0].normal(_c_cc.x, _c_cc.y, _c_cc.z  );
   faces[0].vertex(-c, -c, c, 0, 0);
@@ -891,6 +927,7 @@ PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVe
   faces[1].texture(facesTextures[1]);
   faces[1].tint(facesTints[1].x, facesTints[1].y);
   faces[1].emissive(facesEmissiveness[1].x, facesEmissiveness[1].y, facesEmissiveness[1].z);
+  faces[1].shininess(facesShininess[1]);
 
   faces[1].normal(_c_c_c.x, _c_c_c.y, _c_c_c.z  );
   faces[1].vertex(-c, -c, -c, 0, 0);
@@ -913,6 +950,7 @@ PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVe
   faces[2].texture(facesTextures[2]);
   faces[2].tint(facesTints[2].x, facesTints[2].y);
   faces[2].emissive(facesEmissiveness[2].x, facesEmissiveness[2].y, facesEmissiveness[2].z);
+  faces[2].shininess(facesShininess[2]);
 
   faces[2].normal(_c_cc.x, _c_cc.y, _c_cc.z  );
   faces[2].vertex(-c, -c, c, 0, 0);
@@ -936,6 +974,7 @@ PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVe
   faces[3].texture(facesTextures[3]);
   faces[3].tint(facesTints[3].x, facesTints[3].y);
   faces[3].emissive(facesEmissiveness[3].x, facesEmissiveness[3].y, facesEmissiveness[3].z);
+  faces[3].shininess(facesShininess[3]);
 
   faces[3].normal(_c_cc.x, _c_cc.y, _c_cc.z);
   faces[3].vertex(-c, -c, c, 1, 1);
@@ -958,6 +997,7 @@ PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVe
   faces[4].texture(facesTextures[4]);
   faces[4].tint(facesTints[4].x, facesTints[4].y);
   faces[4].emissive(facesEmissiveness[4].x, facesEmissiveness[4].y, facesEmissiveness[4].z);
+  faces[4].shininess(facesShininess[4]);
 
   faces[4].normal(c_cc.x, c_cc.y, c_cc.z);
   faces[4].vertex(c, -c, c, 1, 1);
@@ -980,6 +1020,7 @@ PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, PVe
   faces[5].texture(facesTextures[5]);
   faces[5].tint(facesTints[5].x, facesTints[5].y);
   faces[5].emissive(facesEmissiveness[5].x, facesEmissiveness[5].y, facesEmissiveness[5].z);
+  faces[5].shininess(facesShininess[5]);
 
   faces[5].normal(_ccc.x, _ccc.y, _ccc.z);
   faces[5].vertex(-c, c, c, 0, 0);
