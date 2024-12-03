@@ -168,8 +168,10 @@ PShape createClassRoom(float w, float h, float t) {
   rightWall = createClassRoomRightWall(t, w, 1);
   decorationFrame2 = createClassRoomDecorationFrame(t/2, w/8, 1, decorationFrameTextureImage1);
   decorationFrame3 = createClassRoomDecorationFrame(t/2, w/8, 1, decorationFrameTextureImage2);
-  doorRight = createClassRoomDoor(t/1.5, w/5, 1);
+  doorRight = createClassRoomDoor(t/2, w/5, 1);
 
+  leftWall = createClassRoomLeftWall(t, w, 1);
+  doorLeft = createClassRoomDoor(t/2, w/5, 1);
 
   frontWall.translate(0, 0, -w/2);
   chalkBoard.translate(h/8, 0, -w/2+2); // +2 to avoid z-fighting
@@ -221,6 +223,13 @@ PShape createClassRoom(float w, float h, float t) {
   doorRight.rotateY(-HALF_PI);
   doorRight.translate(w/2-t/2 -2, t/10, -t);
 
+
+  leftWall.rotateY(HALF_PI);
+  leftWall.rotateX(HALF_PI);
+  leftWall.translate(-w/2+t/2, 0, 0);
+  doorLeft.rotateY(-HALF_PI);
+  doorLeft.translate(-w/2+t/2+2, t/10, t-t/2);
+
   classRoom.addChild(frontWall);
   classRoom.addChild(chalkBoard);
 
@@ -240,7 +249,7 @@ PShape createClassRoom(float w, float h, float t) {
   classRoom.addChild(gardenStairsStep2);
   classRoom.addChild(gardenStairsStep3);
 
-  //classRoom.addChild(leftWall);
+
 
   classRoom.addChild(rightWall);
   classRoom.addChild(decorationFrame2);
@@ -250,6 +259,11 @@ PShape createClassRoom(float w, float h, float t) {
   for (int i = 0; i < desks.length; i++) {
     classRoom.addChild(desks[i]);
   }
+
+  // always add the shapes that have transparency at the end
+  // painters algorithm.
+  classRoom.addChild(leftWall);
+  classRoom.addChild(doorLeft);
 
   return classRoom;
 }
@@ -422,6 +436,58 @@ PShape createClassRoomDoor(float w, float h, float t) {
 
   return door;
 }
+
+
+PShape createClassRoomLeftWall(float w, float h, float t) {
+  PShape leftWall = createShape(GROUP);
+
+
+  // wall partial that is  the support for the door.
+  PShape leftWallPartial1 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  leftWallPartial1.scale(w, h/2, t);
+
+  // wall partial that is at start of the room (close to the chalk board)
+  PShape leftWallPartial2 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  leftWallPartial2.scale(w, h/6, t);
+
+  // Partail 3 and 4 are the small wall parts ontop and on the buttom of the window
+  PShape leftWallPartial3 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  leftWallPartial3.scale(w/4, 2*h/6, t);
+
+  PShape leftWallPartial4 = createUnitaryBox(woodTexture, blankEmissvenessArray, whiteTintsArray);
+  leftWallPartial4.scale(w/4, 2*h/6, t);
+
+  PVector[] windowTints = {
+    new PVector(153, 50),
+    new PVector(153, 50),
+    new PVector(153, 50),
+    new PVector(153, 50),
+    new PVector(153, 50),
+    new PVector(153, 50),
+  };
+  PShape leftWallWindow = createUnitaryBox2(blankTexturesArray, blankEmissvenessArray, windowTints);
+  leftWallWindow.scale(w/2, 2*h/6, t);
+
+
+  leftWallPartial1.translate(0, h/2*0.5, 0);
+
+  leftWallPartial3.translate(w/4+w/8, -h/6, 0);
+  leftWallWindow.translate(0, -h/6, 0);
+  leftWallPartial4.translate(-w/4-w/8, -h/6, 0);
+
+  leftWallPartial2.translate(0, -2*h/6-h/12, 0);
+
+
+  leftWall.addChild(leftWallPartial1);
+  leftWall.addChild(leftWallPartial2);
+  leftWall.addChild(leftWallPartial3);
+  leftWall.addChild(leftWallPartial4);
+  leftWall.addChild(leftWallWindow);
+
+
+  return leftWall;
+}
+
 
 
 PShape createClassRoomDecorationFrame(float w, float h, float t, PImage texture) {
@@ -786,6 +852,116 @@ PShape createUnitaryBox(PImage[] facesTextures, PVector[] facesEmissiveness, int
   }
   return box;
 }
+
+
+PShape createUnitaryBox2(PImage[] facesTextures, PVector[] facesEmissiveness, PVector[] facesTints) {
+  assert(facesTextures.length == 6);
+  assert(facesEmissiveness.length == 6);
+  assert(facesTints.length == 6);
+
+  PShape box = createShape(GROUP);
+
+  PShape[] faces = {
+    createShape(),
+    createShape(),
+    createShape(),
+    createShape(),
+    createShape(),
+    createShape(),
+  };
+
+  float c = 0.5;
+
+
+  // AVANT
+
+  faces[0].beginShape();
+  faces[0].noStroke();
+  faces[0].textureMode(NORMAL);
+  faces[0].texture(facesTextures[0]);
+  faces[0].tint(facesTints[0].x, facesTints[0].y);
+  faces[0].emissive(facesEmissiveness[0].x, facesEmissiveness[0].y, facesEmissiveness[0].z);
+  faces[0].vertex(-c, -c, c, 0, 0);
+  faces[0].vertex(-c, c, c, 0, 1);
+  faces[0].vertex(c, c, c, 1, 1);
+  faces[0].vertex(c, -c, c, 1, 0);
+  faces[0].endShape();
+
+
+  // FOND
+  faces[1].beginShape();
+  faces[1].noStroke();
+  faces[1].textureMode(NORMAL);
+  faces[1].texture(facesTextures[1]);
+  faces[1].tint(facesTints[1].x, facesTints[1].y);
+  faces[1].emissive(facesEmissiveness[1].x, facesEmissiveness[1].y, facesEmissiveness[1].z);
+  faces[1].vertex(-c, -c, -c, 0, 0);
+  faces[1].vertex(-c, c, -c, 0, 1);
+  faces[1].vertex(c, c, -c, 1, 1);
+  faces[1].vertex(c, -c, -c, 1, 0);
+  faces[1].endShape();
+
+  // HAUT
+  faces[2].beginShape();
+  faces[2].noStroke();
+  faces[2].textureMode(NORMAL);
+  faces[2].texture(facesTextures[2]);
+  faces[2].tint(facesTints[2].x, facesTints[2].y);
+  faces[2].emissive(facesEmissiveness[2].x, facesEmissiveness[2].y, facesEmissiveness[2].z);
+  faces[2].vertex(-c, -c, c, 0, 0);
+  faces[2].vertex(c, -c, c, 1, 0);
+  faces[2].vertex(c, -c, -c, 1, 1);
+  faces[2].vertex(-c, -c, -c, 0, 1);
+  faces[2].endShape();
+
+
+  // GAUCHE
+  faces[3].beginShape();
+  faces[3].noStroke();
+  faces[3].textureMode(NORMAL);
+  faces[3].texture(facesTextures[3]);
+  faces[3].tint(facesTints[3].x, facesTints[3].y);
+  faces[3].emissive(facesEmissiveness[3].x, facesEmissiveness[3].y, facesEmissiveness[3].z);
+  faces[3].vertex(-c, -c, c, 1, 1);
+  faces[3].vertex(-c, -c, -c, 0, 1);
+  faces[3].vertex(-c, c, -c, 0, 0);
+  faces[3].vertex(-c, c, c, 1, 0);
+  faces[3].endShape();
+
+  // DROITE
+  faces[4].beginShape();
+  faces[4].noStroke();
+  faces[4].textureMode(NORMAL);
+  faces[4].texture(facesTextures[4]);
+  faces[4].tint(facesTints[4].x, facesTints[4].y);
+  faces[4].emissive(facesEmissiveness[4].x, facesEmissiveness[4].y, facesEmissiveness[4].z);
+  faces[4].vertex(c, -c, c, 1, 1);
+  faces[4].vertex(c, -c, -c, 0, 1);
+  faces[4].vertex(c, c, -c, 0, 0);
+  faces[4].vertex(c, c, c, 1, 0);
+  faces[4].endShape();
+
+  // BAS
+  faces[5].beginShape();
+  faces[5].noStroke();
+  faces[5].textureMode(NORMAL);
+  faces[5].texture(facesTextures[5]);
+  faces[5].tint(facesTints[5].x, facesTints[5].y);
+  faces[5].emissive(facesEmissiveness[5].x, facesEmissiveness[5].y, facesEmissiveness[5].z);
+  faces[5].vertex(-c, c, c, 0, 0);
+  faces[5].vertex(c, c, c, 1, 0);
+  faces[5].vertex(c, c, -c, 1, 1);
+  faces[5].vertex(-c, c, -c, 0, 1);
+  faces[5].endShape();
+
+
+
+  for (int i = 0; i < faces.length; i++) {
+    box.addChild(faces[i]);
+  }
+  return box;
+}
+
 
 public void cameraUpdate() {
 
