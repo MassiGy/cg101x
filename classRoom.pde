@@ -22,25 +22,23 @@ int pushMotionConstant = 100;
 int movementSpeed = 100;    //Bigger number = slower
 float sensitivity = 25;      //Bigger number = slower
 int stillBox = 100;        //Center of POV, mouse must be stillBox away from center to move
-int cameraDistance = 1000;  //distance from camera to camera target in lookmode... 8?
+int cameraDistance = 1000;  //distance from camera to camera target
 
 
 
 
 
-PShader lightShader;
+PShader outsideLightShader;
+PShader insideLightShader;
 PVector[] lightPos = {
-  new PVector(-900, -300, -300),
-  new PVector(-300, -300, 300),
-  //new PVector(-300, 300, -300),
-  //new PVector(0, -300, 0)
+  new PVector(-900, -300, -300), // light above the garden
+  new PVector(-30, -30, -30), // light inside the room
 };
 
 PVector[] lightColor = {
+   new PVector(255, 0, 5),
   new PVector(255, 255, 255),
-  new PVector(255, 255, 255),
-  //new PVector(255, 255, 255),
-  //new PVector(255, 255, 255),
+ 
 };
 
 
@@ -92,7 +90,7 @@ PVector[] blackEmissivenessArray = {      // for no textures
   new PVector(50, 50, 50),
 };
 
-float[] defaultShininess = {
+float[] defaultShininess = {    // no shininess
   100000.0,
   100000.0,
   100000.0,
@@ -122,14 +120,19 @@ PVector[] whiteTintsArray = {      // to preserve textures
 
 boolean noTextures = false;
 PShape classRoom;
+PShape frontWall, backWall, rooftop, floor, leftWall, rightWall;
+PShape chalkBoard, doorLeft, doorRight, lightBulb1, lightBulb2;
+PShape decorationFrame1, decorationFrame2, decorationFrame3;
+PShape soilBase, gardenFloor, gardenStairsStep1, gardenStairsStep2, gardenStairsStep3;
 
+PShape[] desks;
 
 
 void setup() {
   size(600, 600, P3D);
   // load shaders
-  lightShader=loadShader("lightFragShader.glsl", "lightVertShader.glsl");
-
+  outsideLightShader=loadShader("outsideLightFragShader.glsl", "outsideLightVertShader.glsl");
+  insideLightShader=loadShader("insideLightFragShader.glsl", "insideLightVertShader.glsl");
 
   //Camera Initialization
   x = width/2;
@@ -179,7 +182,8 @@ void setup() {
       matteBlackTexture[i]=matteBlackTextureImage;
   }
 
-  classRoom = createClassRoom(600, 450, 150);
+  //classRoom =createClassRoom(600, 450, 150) ;
+  createClassRoom(600, 450, 150);
 }
 
 void draw() {
@@ -195,11 +199,11 @@ void draw() {
   ambientLight(55, 55, 55);
 
 
-  //  for (int i=0; i<lightPos.length; i++) {
-  //    lightSpecular(lightColor[i].x, lightColor[i].y, lightColor[i].z);
-  //    pointLight(lightColor[i].x, lightColor[i].y, lightColor[i].z,
-  //      lightPos[i].x, lightPos[i].y, lightPos[i].z);
-  //  }
+  for (int i=0; i<lightPos.length; i++) {
+    lightSpecular(lightColor[i].x, lightColor[i].y, lightColor[i].z);
+    pointLight(lightColor[i].x, lightColor[i].y, lightColor[i].z,
+      lightPos[i].x, lightPos[i].y, lightPos[i].z);
+  }
 
 
   fill(255);
@@ -207,32 +211,88 @@ void draw() {
     pushMatrix();
     noStroke();
     translate(lightPos[i].x, lightPos[i].y, lightPos[i].z);
-    box(10, 10, 10);
+    if (i==0)
+      box(10, 10, 10);
+    else
+      box(100, 100, 100);
     popMatrix();
   }
 
 
-  // shader(lightShader);
-  shape(classRoom);
+  shader(outsideLightShader);
+  shape(frontWall);
+  resetShader();
+
+  shader(insideLightShader);
+  shape(chalkBoard);
+  resetShader();
+
+  shader(outsideLightShader);
+  shape(backWall);
+  resetShader();
+
+  shader(insideLightShader);
+  shape(decorationFrame1);
+  resetShader();
+
+  shader(outsideLightShader);
+  shape(rooftop);
+  resetShader();
+
+
+  shader(insideLightShader);
+  shape(lightBulb1);
+  shape(lightBulb2);
+  resetShader();
+
+
+  shader(outsideLightShader);
+  shape(floor);
+  shape(soilBase);
+  shape(gardenFloor);
+  shape(gardenStairsStep1);
+  shape(gardenStairsStep2);
+  shape(gardenStairsStep3);
+  resetShader();
+
+  shader(outsideLightShader);
+  shape(rightWall);
+  resetShader();
+
+  shader(insideLightShader);
+  shape(decorationFrame2);
+  shape(decorationFrame3);
+  shape(doorRight);
+
+
+  for (int i = 0; i < desks.length; i++) {
+    shape(desks[i]);
+  }
+  resetShader();
+
+
+  // always add the shapes that have transparency at the end
+  // painters algorithm.
+  shader(outsideLightShader);
+  shape(leftWall);
+  shape(doorLeft);
+  resetShader();
+  //shape(classRoom);
 }
 
 
-PShape createClassRoom(float w, float h, float t) {
-  PShape classRoom = createShape(GROUP);
+void createClassRoom(float w, float h, float t) {
+  // PShape classRoom = createShape(GROUP);
 
-  PShape frontWall, backWall, rooftop, floor, leftWall, rightWall;
-  PShape chalkBoard, doorLeft, doorRight, lightBulb1, lightBulb2;
-  PShape decorationFrame1, decorationFrame2, decorationFrame3;
-  PShape soilBase, gardenFloor, gardenStairsStep1, gardenStairsStep2, gardenStairsStep3;
+  //PShape frontWall, backWall, rooftop, floor, leftWall, rightWall;
+  //PShape chalkBoard, doorLeft, doorRight, lightBulb1, lightBulb2;
+  //PShape decorationFrame1, decorationFrame2, decorationFrame3;
+  //PShape soilBase, gardenFloor, gardenStairsStep1, gardenStairsStep2, gardenStairsStep3;
 
-  PShape[] desks = {
-    createWholeDesk(h/6, w/15, t/60),
-    createWholeDesk(h/6, w/15, t/60),
-    createWholeDesk(h/6, w/15, t/60),
-    createWholeDesk(h/6, w/15, t/60),
-    createWholeDesk(h/6, w/15, t/60),
-    createWholeDesk(h/6, w/15, t/60),
-  };
+  desks = new PShape[6];
+  for (int i = 0; i < desks.length; i++)
+    desks[i] =  createWholeDesk(h/6, w/15, t/60);
+
 
 
   frontWall = createClassRoomFrontWall(h, t, 1);
@@ -317,42 +377,42 @@ PShape createClassRoom(float w, float h, float t) {
   doorLeft.rotateY(-HALF_PI);
   doorLeft.translate(-w/2+t/2+2, t/10, t-t/2);
 
-  classRoom.addChild(frontWall);
-  classRoom.addChild(chalkBoard);
+  //  shape(frontWall);
+  //  shape(chalkBoard);
 
-  classRoom.addChild(backWall);
-  classRoom.addChild(decorationFrame1);
+  //  shape(backWall);
+  //  shape(decorationFrame1);
 
-  classRoom.addChild(rooftop);
-  classRoom.addChild(lightBulb1);
-  classRoom.addChild(lightBulb2);
-
-
-
-  classRoom.addChild(floor);
-  classRoom.addChild(soilBase);
-  classRoom.addChild(gardenFloor);
-  classRoom.addChild(gardenStairsStep1);
-  classRoom.addChild(gardenStairsStep2);
-  classRoom.addChild(gardenStairsStep3);
+  //  shape(rooftop);
+  //  shape(lightBulb1);
+  //  shape(lightBulb2);
 
 
 
-  classRoom.addChild(rightWall);
-  classRoom.addChild(decorationFrame2);
-  classRoom.addChild(decorationFrame3);
-  classRoom.addChild(doorRight);
+  //  shape(floor);
+  //  shape(soilBase);
+  //  shape(gardenFloor);
+  //  shape(gardenStairsStep1);
+  //  shape(gardenStairsStep2);
+  //  shape(gardenStairsStep3);
 
-  for (int i = 0; i < desks.length; i++) {
-    classRoom.addChild(desks[i]);
-  }
 
-  // always add the shapes that have transparency at the end
-  // painters algorithm.
-  classRoom.addChild(leftWall);
-  classRoom.addChild(doorLeft);
 
-  return classRoom;
+  //  shape(rightWall);
+  //  shape(decorationFrame2);
+  //  shape(decorationFrame3);
+  //  shape(doorRight);
+
+  //  for (int i = 0; i < desks.length; i++) {
+  //    shape(desks[i]);
+  //  }
+
+  //  // always add the shapes that have transparency at the end
+  //  // painters algorithm.
+  //  shape(leftWall);
+  //  shape(doorLeft);
+
+  // return classRoom;
 }
 
 PShape createClassRoomFrontWall(float w, float h, float t) {
