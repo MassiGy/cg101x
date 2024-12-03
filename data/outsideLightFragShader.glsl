@@ -4,7 +4,7 @@ precision mediump float;
 precision mediump int;
 #endif
 
-uniform int lightCount;
+//uniform int lightCount;
 uniform vec4 lightPosition[8];
 uniform vec3 lightDiffuse[8];
 uniform vec3 lightAmbient[8];
@@ -39,13 +39,13 @@ void main() {
     gl_FragColor = vertEmissive;
   } else {
    
-    vec3  lightDir  = normalize(lightPosition[0].xyz - ecPosition);
-    float intensity = lambertFactor(lightDir, normal);
-    float spec      = blinnPhongFactor(lightDir, ecPosition, normal, vertShininess);
-
-    dfColor += vertColor.rgb * texColor.rgb *lightDiffuse[0] * intensity;
-    spColor += lightSpecular[0] * spec;
-    amColor += lightAmbient[0];
+        vec3  lightDir  = normalize(lightPosition[0].xyz - ecPosition);
+        float intensity = lambertFactor(lightDir, normal);
+        float spec      = blinnPhongFactor(lightDir, ecPosition, normal, vertShininess);
+    
+        dfColor += vertColor.rgb * texColor.rgb *lightDiffuse[0] * intensity;
+        spColor += lightSpecular[0] * spec;
+        amColor += lightAmbient[0];
       
 
     gl_FragColor = vec4(dfColor + amColor + spColor, vertColor.a * texColor.a);
