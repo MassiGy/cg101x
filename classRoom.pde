@@ -271,6 +271,8 @@ void draw() {
   // painters algorithm.
   shape(leftWall);
   shape(doorLeft);
+  
+  saveFrame("frames/####.tif");
 }
 
 
