@@ -1,10 +1,10 @@
-#define PROCESSING_LIGHT_SHADER
+#define PROCESSING_TEXLIGHT_SHADER
 #ifdef GL_ES
 precision mediump float;
 precision mediump int;
 #endif
 
-//uniform int lightCount;
+uniform int lightCount;
 uniform vec4 lightPosition[8];
 uniform vec3 lightDiffuse[8];
 uniform vec3 lightAmbient[8];
@@ -29,26 +29,27 @@ float blinnPhongFactor(vec3 lightDir, vec3 vertPos, vec3 vecNormal, float shinin
 }
 
 void main() {
-  vec3  dfColor = vec3(0);
-  vec3  amColor = vec3(0);
-  vec3  spColor = vec3(0);
-  vec3  normal  = normalize(ecNormal);
+  vec3  dfColor  = vec3(0);
+  vec3  amColor  = vec3(0);
+  vec3  spColor  = vec3(0);
+  vec3  normal   = normalize(ecNormal);
   vec4  texColor = texture2D(texture, uv.st);
 
   if(vertEmissive.x > 0 || vertEmissive.y > 0 || vertEmissive.z > 0) {
-    gl_FragColor = vertEmissive;
+    gl_FragColor = vec4((vertColor+ texColor )* (vertEmissive*0.6) );   // relax screen emissiveness by 40%
   } else {
-    for(int i=1; i<3; i++) {
+    for(int i=0; i<lightCount; i++) {
         vec3  lightDir  = normalize(lightPosition[i].xyz - ecPosition);
         float intensity = lambertFactor(lightDir, normal);
         float spec      = blinnPhongFactor(lightDir, ecPosition, normal, vertShininess);
+
+        float relaxation = step(0, i) * .35;     // if(i>0) relax light by 65% (inside the class room)
     
-        dfColor += vertColor.rgb * texColor.rgb *lightDiffuse[i] * intensity;
+        dfColor += vertColor.rgb * texColor.rgb * lightDiffuse[i] * intensity * relaxation;
         spColor += lightSpecular[i] * spec;
-        amColor += lightAmbient[i];
+       // amColor += (1-step(.1, dfColor+spColor)) * lightAmbient[i] * .5;
       }
 
     gl_FragColor = vec4(dfColor + amColor + spColor, vertColor.a * texColor.a);
   }
 }
-

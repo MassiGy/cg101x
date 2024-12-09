@@ -1,4 +1,4 @@
-#define PROCESSING_LIGHT_SHADER
+#define PROCESSING_TEXLIGHT_SHADER
 
 uniform mat4 modelview;
 uniform mat4 transform;
@@ -27,4 +27,3 @@ void main() {
   vertShininess = shininess;
   uv            = texCoord;
 }
-
