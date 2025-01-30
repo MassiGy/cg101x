@@ -1,4 +1,4 @@
-# Computer Graphics 101 X (cg101x) | Class Room 3D Modaling.
+# Computer Graphics 101 X (cg101x) | Class Room 3D Modeling.
 
 The idea behind this little sketch is to modal in 3D a class room. Besides, we are going to experiment with shaders to implement lighting and other effects. (it is a continuum on top of my other project & repo cg101a).
 
