@@ -1,4 +1,5 @@
 #define PROCESSING_TEXLIGHT_SHADER
+
 #ifdef GL_ES
 precision mediump float;
 precision mediump int;
@@ -47,7 +48,7 @@ void main() {
     
         dfColor += vertColor.rgb * texColor.rgb * lightDiffuse[i] * intensity * relaxation;
         spColor += lightSpecular[i] * spec;
-       // amColor += (1-step(.1, dfColor+spColor)) * lightAmbient[i] * .5;
+        //amColor += (1-step(.1, dfColor+spColor)) * lightAmbient[i] * .5;
       }
 
     gl_FragColor = vec4(dfColor + amColor + spColor, vertColor.a * texColor.a);

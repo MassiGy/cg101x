@@ -211,7 +211,6 @@ void draw() {
   camera(x, y, z, tx, ty, tz, 0, 1, 0);
 
 
-
   for (int i=0; i<lightPos.length; i++) {
     lightSpecular(lightColor[i].x, lightColor[i].y, lightColor[i].z);
     pointLight(lightColor[i].x, lightColor[i].y, lightColor[i].z,
@@ -272,7 +271,7 @@ void draw() {
   shape(leftWall);
   shape(doorLeft);
   
-  saveFrame("frames/####.tif");
+  //saveFrame("frames/####.tif");
 }
 
 
