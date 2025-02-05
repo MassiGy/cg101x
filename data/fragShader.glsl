@@ -35,20 +35,31 @@ void main() {
   vec3  spColor  = vec3(0);
   vec3  normal   = normalize(ecNormal);
   vec4  texColor = texture2D(texture, uv.st);
+  float spec;
+
 
   if(vertEmissive.x > 0 || vertEmissive.y > 0 || vertEmissive.z > 0) {
     gl_FragColor = vec4((vertColor+ texColor )* (vertEmissive*0.6) );   // relax screen emissiveness by 40%
+  
   } else {
     for(int i=0; i<lightCount; i++) {
         vec3  lightDir  = normalize(lightPosition[i].xyz - ecPosition);
         float intensity = lambertFactor(lightDir, normal);
-        float spec      = blinnPhongFactor(lightDir, ecPosition, normal, vertShininess);
 
-        float relaxation = step(0, i) * .35;     // if(i>0) relax light by 65% (inside the class room)
+
+        if(vertShininess > 0.0){
+		spec = blinnPhongFactor(lightDir, ecPosition, normal, vertShininess);
+		spColor += lightSpecular[i] * spec;
+	}
+
+	// if(i>0) relax light by 65% (this will let the first light that is outside paint its yellow tint, 
+	// but it will relax the others so as we do not get fully white zones that are flashy and not realistic)
+	// This setting has been set with trail & error. (find the sweet spot that you like best ¨\_(°_°)_/¨ )
+	float relaxation = step(0, i) * .35;     
     
         dfColor += vertColor.rgb * texColor.rgb * lightDiffuse[i] * intensity * relaxation;
-        spColor += lightSpecular[i] * spec;
-        //amColor += (1-step(.1, dfColor+spColor)) * lightAmbient[i] * .5;
+        
+        amColor += lightAmbient[i];
       }
 
     gl_FragColor = vec4(dfColor + amColor + spColor, vertColor.a * texColor.a);
