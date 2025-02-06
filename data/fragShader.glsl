@@ -52,11 +52,10 @@ void main() {
 		spColor += lightSpecular[i] * spec;
 	}
 
-	// if(i>0) relax light by 65% (this will let the first light that is outside paint its yellow tint, 
-	// but it will relax the others so as we do not get fully white zones that are flashy and not realistic)
+	// relax light by 65% (as we do not get fully white zones that are flashy and not realistic)
 	// This setting has been set with trail & error. (find the sweet spot that you like best ¨\_(°_°)_/¨ )
-	float relaxation = step(0, i) * .35;     
-    
+    	float relaxation = .35;     
+
         dfColor += vertColor.rgb * texColor.rgb * lightDiffuse[i] * intensity * relaxation;
         
         amColor += lightAmbient[i];
