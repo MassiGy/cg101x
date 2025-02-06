@@ -43,8 +43,6 @@ PShape[] desks;
 
 
 
-
-
 PShader _shader;
 PVector[] lightPos = {
   // light above the garden
@@ -57,7 +55,6 @@ PVector[] lightPos = {
   new PVector(-20, -10, 150),
   new PVector(-20, -10, -150),
   new PVector(-20, -10, 300),
-
 };
 
 PVector[] lightColor = {
@@ -257,7 +254,6 @@ void draw() {
   ambientLight(0, 0, 0);
 
   shader(_shader);
-
 
   shape(frontWall);
 
@@ -1144,7 +1140,7 @@ public void keyReleased() {
   }
 }
 
-// black magic
+
 public float correctAngle(float xc, float zc) {
   float newAngle = -degrees(atan(xc/zc));
   if (xComp > 0 && zComp > 0)
