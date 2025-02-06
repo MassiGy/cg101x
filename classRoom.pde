@@ -1,31 +1,54 @@
 /*
 
-  @Author: Massiles GHERNAOUT
-  @login : gm213204
-  
-  
-  @link: https://github.com/MassiGy/cg101x
-         Computer Graphic 101 Extreme. (cg101x)
-  
-  @description: The idea behind this little sketch is to model a 3D class room. 
-                Besides, we are going to experiment with shaders to implement lighting and other effects. 
+ @Author: Massiles GHERNAOUT
+ @login : gm213204
+ 
+ 
+ @link: https://github.com/MassiGy/cg101x
+ Computer Graphic 101 Extreme. (cg101x)
+ 
+ @description: The idea behind this little sketch is to model a 3D class room.
+ Besides, we are going to experiment with shaders to implement lighting and other effects.
+ 
+ 
+ @note: Since Processing does not detect the light obstacles, which means that if a
+ surface is hidden behind a wall in regards to a light source, this will be illuminated
+ even though in reality it should be in the shadow of the wall.
+ 
+ Since we do not have this computation at our disposal, I had to relax a bit our lighting by reducing
+ the intensity within our shaders.
+ 
+ This gave me a setup that is not blindingly bright and some what realistic. It is just an approximation
+ on top of the lack of shadow computation.
+ 
+ It can look a bit dark, but in my opinion, it is better then getting blind with a bunch of white zones
+ on the walls, especially those that face the garden. (sun light + inner light = white zones on the wall
+ if not relaxed).
+ 
+ */
 
-  
-  @note: Since Processing does not detect the light obstacles, which means that if a 
-         surface is hidden behind a wall in regards to a light source, this will be illuminated
-         even though in reality it should be in the shadow of the wall.
-         
-         Since we do not have this computation at our disposal, I had to relax a bit our lighting by reducing
-         the intensity within our shaders.
-         
-         This gave me a setup that is not blindingly bright and some what realistic. It is just an approximation 
-         on top of the lack of shadow computation.
-         
-         It can look a bit dark, but in my opinion, it is better then getting blind with a bunch of white zones
-         on the walls, especially those that face the garden. (sun light + inner light = white zones on the wall 
-         if not relaxed).
-         
-*/
+PShape[] dragonBalls;
+
+float c = 10/2;
+PVector[] vertecies = {
+  new PVector(-c, -c, c),
+  new PVector(c, -c, -c),
+  new PVector(c, c, c),
+
+  new PVector(-c, -c, c),
+  new PVector(c, c, c),
+  new PVector(-c, c, -c),
+
+  new PVector(c, -c, -c),
+  new PVector(c, c, c),
+  new PVector(-c, c, -c),
+
+  new PVector(-c, -c, c),
+  new PVector(-c, c, -c),
+  new PVector(c, -c, -c)
+};
+float sphereRadius = vertecies[0].mag();
+
 
 //ClassRoom dimensions & shapes
 int W = 600;
@@ -232,6 +255,23 @@ void setup() {
   }
 
   createClassRoom(W, H, T);
+
+  dragonBalls = new PShape[7];
+  for (int i = 0; i < dragonBalls.length; i++) {
+    dragonBalls[i] = createGeode();
+  }
+
+  //dragon ball du haut
+  dragonBalls[5].translate(2.5*c, -4*c, 0);
+  dragonBalls[6].translate(-2.5*c, -4*c, 0);
+
+  // dragon ball du millieu
+  dragonBalls[1].translate(4*c, 0, 0);
+  dragonBalls[2].translate(-4*c, 0, 0);
+
+  // dragon ball du bas
+  dragonBalls[3].translate(2.5*c, 4*c, 0);
+  dragonBalls[4].translate(-2.5*c, 4*c, 0);
 }
 
 void draw() {
@@ -285,6 +325,19 @@ void draw() {
   for (int i = 0; i < desks.length; i++) {
     shape(desks[i]);
   }
+
+  //dragon ball du haut
+  shape(dragonBalls[5]);
+  shape(dragonBalls[6]);
+
+  // dragon ball du millieu
+  shape(dragonBalls[0]);
+  shape(dragonBalls[1]);
+  shape(dragonBalls[2]);
+
+  // dragon ball du bas
+  shape(dragonBalls[3]);
+  shape(dragonBalls[4]);
 
   // always add the shapes that have transparency at the end
   // painters algorithm.
@@ -445,7 +498,7 @@ PShape createClassRoomLightBulb(float w, float h, float t) {
   PShape lightbulb = createShape(GROUP);
 
   PVector[] lightBulbEmissveness = {
-    new PVector(255, 255, 255), 
+    new PVector(255, 255, 255),
     new PVector(255, 255, 255),
     new PVector(255, 255, 255),
     new PVector(255, 255, 255),
@@ -1150,4 +1203,55 @@ public float correctAngle(float xc, float zc) {
   else if (xComp < 0 && zComp < 0)
     newAngle = (90+ newAngle) + 270;
   return newAngle;
+}
+
+
+
+PShape createGeode() {
+  PShape g = createShape();
+
+  g.beginShape(TRIANGLES);
+  g.shininess(300);
+
+  for (int i = 0; i < vertecies.length; i+=3) {
+    recTriangle(g, 4, vertecies[i], vertecies[i+1], vertecies[i+2]);
+  }
+
+  g.endShape();
+  return g;
+}
+
+void recTriangle(PShape container, int n, PVector a, PVector b, PVector c) {
+  if (n >=0 ) {
+    PVector point_btw_AandB = a.copy().add(b).mult(0.5).normalize().mult(sphereRadius);
+    PVector point_btw_AandC = a.copy().add(c).mult(0.5).normalize().mult(sphereRadius);
+    PVector point_btw_BandC = b.copy().add(c).mult(0.5).normalize().mult(sphereRadius);
+
+
+
+    recTriangle(container, n-1, point_btw_AandB, point_btw_AandC, point_btw_BandC);
+    recTriangle(container, n-1, point_btw_AandB, point_btw_AandC, a);
+    recTriangle(container, n-1, point_btw_BandC, point_btw_AandC, c);
+    recTriangle(container, n-1, point_btw_AandB, point_btw_BandC, b);
+  } else {
+    addTriangle(container, a, b, c);
+  }
+}
+
+void addTriangle(PShape container, PVector a, PVector b, PVector c) {
+  container.noStroke();
+  container.fill(color(242, 94, 2));
+  //container.fill(color(255, 255, 255));
+
+  PVector aNormal = (new PVector(a.x, a.y, a.z)).normalize();
+  container.normal(aNormal.x, aNormal.y, aNormal.z);
+  container.vertex(a.x, a.y, a.z);
+
+  PVector bNormal = (new PVector(b.x, b.y, b.z)).normalize();
+  container.normal(bNormal.x, bNormal.y, bNormal.z);
+  container.vertex(b.x, b.y, b.z);
+
+  PVector cNormal = (new PVector(c.x, c.y, c.z)).normalize();
+  container.normal(cNormal.x, cNormal.y, cNormal.z);
+  container.vertex(c.x, c.y, c.z);
 }
