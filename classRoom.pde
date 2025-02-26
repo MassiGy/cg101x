@@ -92,7 +92,7 @@ PImage[] blankTexturesArray = new PImage[6];
 PImage[] woodTexture = new PImage[6];
 PImage[] matteBlackTexture = new PImage[6];
 
-PVector[] blankEmissvenessArray = { // no emissivness
+PVector[] blankEmissvenessArray = { 
   new PVector(),
   new PVector(),
   new PVector(),
@@ -101,7 +101,7 @@ PVector[] blankEmissvenessArray = { // no emissivness
   new PVector(),
 };
 
-PVector[] blackEmissivenessArray = {   // for no textures
+PVector[] blackEmissivenessArray = {  
   new PVector(50, 50, 50),
   new PVector(50, 50, 50),
   new PVector(50, 50, 50),
@@ -127,7 +127,7 @@ float[] noShininess = {
   0.0,
 };
 
-PVector[] blackTintsArray = {      // for no textures
+PVector[] blackTintsArray = {      
   new PVector(50, 255),
   new PVector(50, 255),
   new PVector(50, 255),
@@ -135,7 +135,7 @@ PVector[] blackTintsArray = {      // for no textures
   new PVector(50, 255),
   new PVector(50, 255),
 };
-PVector[] whiteTintsArray = {      // to preserve textures
+PVector[] whiteTintsArray = {      
   new PVector(255, 255),
   new PVector(255, 255),
   new PVector(255, 255),
